@@ -14,6 +14,12 @@ const bidSchema = new Schema({
 
 const claimSchema = new Schema({
   customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
+  claimant: {
+    name: { type: String},
+    address: { type: String},
+    phone: { type: String},
+    email:{ type: String}
+},
   incidentDetails: {
     date: { type: Date, required: true },
     time: { type: String, required: true },
