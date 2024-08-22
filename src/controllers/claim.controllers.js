@@ -1,10 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const Claim = require('../models/claim.model');
+const Customer = require('../models/customerModel')
+const { ObjectId } = require('mongodb');
 
 
 const createClaim = async (req, res) => {
     try {
+      claimant = await Customer.findById(req.body.customerId)
+      claimant.name = `${claimant.firstName} ${claimant.lastName}`
+      req.body.claimant = {
+        name: claimant.name,
+        address: claimant.address, // Assuming these fields exist in the claimant object
+        phone: claimant.phone,
+        email: claimant.email
+      };
       const claim = new Claim(req.body);
       await claim.save();
       res.status(201).send(claim);
