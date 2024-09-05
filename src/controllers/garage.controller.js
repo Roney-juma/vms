@@ -1,4 +1,6 @@
-
+const Garage = require('../models/garage.model');
+const Claim = require('../models/claim.model');
+const { ObjectId } = require('mongodb');
 const createGarage = async (req, res) => {
     try {
       const newGarage = new Garage(req.body);

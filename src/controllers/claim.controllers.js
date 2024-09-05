@@ -170,6 +170,30 @@ const getBidsByClaim = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+  // getAssessedClaimById
+  const getAssessedClaimById = async (req, res) => {
+    const claimId = req.params.id;
+    try {
+      const claim = await Claim.findById(claimId);
+      if (!claim) {
+        return res.status(404).json({ error: 'Claim not found' });
+        }
+        res.json(claim);
+        } catch (error) {
+          res.status(500).json({ error: 'Server error' });
+          }
+          };
+          // getAssessedClaimsByGarage
+  const getAssessedClaimsByGarage = async (req, res) => {
+        const garageId = req.params.id;
+          try {
+            const claims = await Claim.find({ garage: garageId, status: 'Awarded' });
+            res.json(claims);
+            } catch (error) {
+              res.status(500).json({ error: 'Server error' });
+              }
+              };
+
 
 
 module.exports = {
@@ -184,6 +208,6 @@ module.exports = {
     getBidsByClaim,
     getAwardedClaims,
     garageFindsAssessedClaimsForRepair,
-
-
+    getAssessedClaimById,
+    getAssessedClaimsByGarage
   };
