@@ -14,8 +14,8 @@ router.post('/awardClaim/:id', claimController.awardClaim)
 router.get('/awarded', claimController.getAwardedClaims)
 router.get('/bids/:id', claimController.getBidsByClaim)
 router.get('/assessed', claimController.garageFindsAssessedClaimsForRepair);
-router.get('/assessed/:id', claimController.getAssessedClaimById);
-router.get('/assessed/repair/:id', claimController.getAssessedRepairClaimById);
+// router.get('/assessed/:id', claimController.getAssessedClaimById);
+// router.get('/assessed/repair/:id', claimController.getAssessedRepairClaimById);
 
 
 
