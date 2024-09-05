@@ -17,7 +17,7 @@ const imageUpload = async (req, res) => {
         const file = req.file;
         const params = {
             Bucket: process.env.BUCKET_NAME,
-            Key: `/ave/image-attachment_${Date.now()}_${file.originalname}/${file.originalname}`,
+            Key: `/ave-bucket/image-attachment_${Date.now()}_${file.originalname}/${file.originalname}`,
             Body: req.file.buffer,
             ACL: 'public-read',
             ContentType: file.mimetype,

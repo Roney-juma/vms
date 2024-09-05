@@ -90,11 +90,15 @@ const claimSchema = new Schema({
     },
     receipts: [String],
   },
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
+  status: { 
+    type: String, 
+    enum: ['Pending', 'Approved','Rejected', 'Assessment', 'Awarded', 'RepairBids', 'Garage','Completed'], 
+    default: 'Pending' 
   },
+  repairs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RepairRequest',
+  }],
   bids: [bidSchema],
   awardedAssessor: {
     assessorId: { type: Schema.Types.ObjectId, ref: 'Assessor' },

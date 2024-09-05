@@ -5,6 +5,7 @@ const claims = require("./claim.route")
 const users = require("./users.route")
 const upload = require("./imageUploads.route")
 const assessors = require("./assesor")
+const garages = require("./garage.route")
 
 const router = express.Router()
 
@@ -15,5 +16,6 @@ router.use("/users", users)
 
 router.use("/images", upload)
 router.use("/assessors", assessors)
+router.use("/garages", garages)
 
 module.exports  = router

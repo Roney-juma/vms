@@ -161,6 +161,17 @@ const getBidsByClaim = async (req, res) => {
         }
   };
 
+  // Garage Finds Assessed Claims for Repair
+  const garageFindsAssessedClaimsForRepair = async (req, res) => {
+    try {
+      const claims = await Claim.find({ status: 'Awarded' });
+      res.status(200).json(claims);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+
 module.exports = {
     createClaim,
     getClaims,
@@ -171,6 +182,8 @@ module.exports = {
     getClaimsByCustomer,
     awardClaim,
     getBidsByClaim,
-    getAwardedClaims
+    getAwardedClaims,
+    garageFindsAssessedClaimsForRepair,
+
 
   };
