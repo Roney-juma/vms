@@ -6,7 +6,6 @@ const bidSchema = new Schema({
   bidderType: {
     type: String,
     enum: ['assessor', 'garage'],
-    required: true,
   },
   assessorId: { 
     type: Schema.Types.ObjectId, 

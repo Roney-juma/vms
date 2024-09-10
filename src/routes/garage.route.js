@@ -10,5 +10,6 @@ router.get('/assessedClaims',garageController.getAssessedClaims)
 router.delete('/delete/:id', garageController.deleteGarage)
 router.get('/:id', garageController.getGarage)
 router.put('/:id',garageController.updateGarage)
+router.post('/bidClaim/:id',garageController.placeBid)
 
 module.exports = router;
