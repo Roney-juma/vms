@@ -2,6 +2,7 @@
 const customerService = require("../service/customerService");
 const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
+const emailService = require("../service/email.service");
 
 async function createCustomer(req, res) {
   

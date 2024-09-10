@@ -3,13 +3,13 @@ const User = require('../models/users.model');
 
 const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
+const emailService = require("../service/email.service");
 
 
 const login =
     async (req, res) => {
         const { email, password } = req.body;
         const user = await authService.loginUserWithEmailAndPassword(email, password);
-        console.log("Name",user)
         const tokens = tokenService.GenerateToken(user);
         res.send({ user, tokens });
     };
@@ -20,7 +20,7 @@ const createUser = async (req, res) => {
     const { username, password, fullName, email, role } = req.body;
     const newAdminUser = new User({
       username,
-      password, // Remember to hash this password before saving!
+      password, 
       fullName,
       email,
       role

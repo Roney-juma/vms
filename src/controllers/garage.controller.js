@@ -4,6 +4,7 @@ const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt')
 const garageService = require("../service/garage.service.js");
 const tokenService = require("../service/token.service");
+const emailService = require("../service/email.service");
 
 
 const login =

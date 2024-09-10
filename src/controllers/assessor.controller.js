@@ -3,6 +3,8 @@ const Claim = require('../models/claim.model');
 
 const assessorService = require("../service/assesor.service");
 const tokenService = require("../service/token.service");
+const emailService = require("../service/email.service");
+
 
 
 const login =
@@ -14,16 +16,39 @@ const login =
     };
 // Create new assessor
 const createAssessor = async (req, res) => {
-    try {
-        // const { name, contactInfo, licenseNumber, experience, specialties } = req.body;
-        const newAssessor =new Assessor(req.body);
-        const assessor = await newAssessor.save();
-        
-            res.status(201).json(assessor);
-            } catch (err) {
-                res.status(500).json({ error: err });
-                }
-  };
+  try {
+    // Create a new assessor from the request body
+    const newAssessor = new Assessor(req.body);
+    const password = await bcrypt.hash(newAssessor.password,10)
+    newAssessor.password = password
+    const assessor = await newAssessor.save();
+
+    if (assessor && assessor.email) {
+      // Send email notification with login credentials
+      emailService.sendEmailNotification(
+        assessor.email,
+        'Welcome To Ave Insurance',
+        `Dear ${assessor.name},
+
+You have successfully been registered to Ave Insurance as an Assessor.
+
+Your login credentials are as follows:
+Username: ${assessor.email}
+Password: ${req.body.password}
+
+Please keep this information secure.
+
+Best Regards,
+Admin Team`
+      );
+    }
+    res.status(201).json(assessor);
+  } catch (err) {
+    console.error('Error creating assessor:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
   
 
 //   Get all Assessors
@@ -106,6 +131,14 @@ const placeBid = async (req, res) => {
   
       claim.bids.push(newBid);
       await claim.save();
+      const assessor = await Assessor.findById(assessorId);
+      if (assessor && assessor.email) {
+        emailService.sendEmailNotification(
+          assessor.email, // Recipient email address
+          'New Bid Placed', // Subject of the email
+          `Dear ${assessor.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.` // Email content
+        );
+      }
   
       res.status(201).json(claim);
     } catch (err) {
