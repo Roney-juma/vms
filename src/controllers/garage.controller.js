@@ -124,6 +124,40 @@ const deleteGarage = async (req, res) => {
           }
           };
 
+const getGarageBids = async (req, res) => {
+            const { garageId } = req.params;
+          
+            try {
+              // Find all claims that have bids placed by the specified assessor
+              const claims = await Claim.find({ "bids.garageId": garageId });
+          
+              // Extract and collect only the bids placed by the specified assessor
+              const garageBids = [];
+              claims.forEach(claim => {
+                claim.bids.forEach(bid => {
+                  if (bid.garageId.toString() === garageId) {
+                    garageBids.push({
+                      claimId: claim._id,
+                      bidId: bid._id,
+                      amount: bid.amount,
+                      status: bid.status,
+                      bidDate: bid.bidDate,
+                      claimStatus: claim.status
+                    });
+                  }
+                });
+              });
+          
+              if (garageBids.length === 0) {
+                return res.status(404).json({ error: 'No bids found for this assessor' });
+              }
+          
+              res.json(garageBids);
+            } catch (err) {
+              res.status(500).json({ error: 'Server error' });
+            }
+          };
+
 
   //   Exporting the routes
 module.exports = {
@@ -135,7 +169,8 @@ module.exports = {
     deleteGarage,
     getAssessedClaims,
     placeBid,
-    completeRepair
+    completeRepair,
+    getGarageBids
     };
 
 
