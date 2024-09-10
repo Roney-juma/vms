@@ -187,6 +187,21 @@ const getBidsByClaim = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
         }
   };
+const getGarageBidsByClaim = async (req, res) => {
+    const claimId = req.params.id;
+    
+    try {
+      const claim = await Claim.findById(claimId);
+      if (!claim) {
+        return res.status(404).json({ error: 'Claim not found' });
+        }
+        // Filter bids to include only those with bidderType 'assessor'
+      const assessorBids = claim.bids.filter(bid => bid.bidderType === 'garage');
+        res.json(assessorBids);
+        } catch (err) {
+          res.status(500).json({ error: 'Server error' });
+          }
+    };
 
   // Garage Finds Assessed Claims for Repair
   const garageFindsAssessedClaimsForRepair = async (req, res) => {
@@ -237,5 +252,6 @@ module.exports = {
     garageFindsAssessedClaimsForRepair,
     getAssessedClaimById,
     getAssessedClaimsByGarage,
-    awardBidToGarage
+    awardBidToGarage,
+    getGarageBidsByClaim
   };
