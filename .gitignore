@@ -1,6 +1,5 @@
 node_modules
 tmp
-package-lock.json
 .npmrc
 *.DS_Store
 .env
