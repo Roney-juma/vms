@@ -3,7 +3,7 @@ const express =require("express")
 
 const router = express.Router();
 
-
+router.post('/login',garageController.login)
 router.post('/create',garageController.createGarage)
 router.get('/',garageController.getAllGarages)
 router.delete('/delete/:id', garageController.deleteGarage)

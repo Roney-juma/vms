@@ -1,6 +1,23 @@
 const Garage = require('../models/garage.model');
 const Claim = require('../models/claim.model');
 const { ObjectId } = require('mongodb');
+
+const garageService = require("../service/garage.service.js");
+const tokenService = require("../service/token.service");
+
+
+const login =
+    async (req, res) => {
+        const { email, password } = req.body;
+        const user = await garageService.loginUserWithEmailAndPassword(email, password);
+        console.log("Name",user)
+        if (!user) {
+          return res.status(401).json({ message: "Invalid email or password" });
+          }
+        const tokens = tokenService.GenerateToken(user);
+        res.send({ user, tokens });
+    };
+
 const createGarage = async (req, res) => {
     try {
       const newGarage = new Garage(req.body);
@@ -55,6 +72,7 @@ const deleteGarage = async (req, res) => {
   //   Exporting the routes
 module.exports = {
     createGarage,
+    login,
     getAllGarages,
     getGarage,
     updateGarage,

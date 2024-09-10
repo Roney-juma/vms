@@ -5,6 +5,7 @@ const router = express.Router();
 
 
 router.post('/create',assesorController.createAssessor)
+router.post('/login',assesorController.login)
 router.get('/',assesorController.getAllAssessors )
 router.get('/approvedClaims',assesorController.getApprovedClaims)
 router.delete('/delete/:id', assesorController.deleteAssessor)

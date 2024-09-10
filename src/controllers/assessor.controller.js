@@ -1,8 +1,17 @@
 const Assessor = require('../models/assessor.model');
 const Claim = require('../models/claim.model');
-const { ObjectId } = require('mongodb');
+
+const assessorService = require("../service/assesor.service");
+const tokenService = require("../service/token.service");
 
 
+const login =
+    async (req, res) => {
+        const { email, password } = req.body;
+        const user = await assessorService.loginUserWithEmailAndPassword(email, password);
+        const tokens = tokenService.GenerateToken(user);
+        res.send({ user, tokens });
+    };
 // Create new assessor
 const createAssessor = async (req, res) => {
     try {
@@ -15,6 +24,7 @@ const createAssessor = async (req, res) => {
                 res.status(500).json({ error: err });
                 }
   };
+  
 
 //   Get all Assessors
 const getAllAssessors = async (req, res) => {
@@ -143,7 +153,8 @@ const getAssessorBids = async (req, res) => {
 
 
 
- module.exports = {   
+ module.exports = { 
+    login, 
     createAssessor,
     getAllAssessors,
     getAssessorById,

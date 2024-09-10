@@ -1,4 +1,4 @@
-const customerModel = require("../models/customerModel");
+const Assessor = require('../models/assessor.model');
 const bcrypt = require('bcrypt')
 const ApiError = require('../utils/ApiError.js');
 
@@ -6,17 +6,18 @@ async function createCustomer(cus) {
   
   const password = await bcrypt.hash(cus.password,10)
   cus.password = password
-  return await customerModel.create(cus);
+  return await Assessor.create(cus);
 }
 async function getCustomers() {
-  return await customerModel.find();
+  return await Assessor.find();
 }
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await getUserByEmail(email);
+  console.log("Assessor",user)
   const authorized = await user.isPasswordMatch(password);
   if (!authorized) {
       incrementLoginAttempt(user);
-      throw new ApiError(401, 'Incorrect email or password');
+      return 'Incorrect email or password'
   }
 
   return user;
@@ -26,11 +27,11 @@ const loginUserWithEmailAndPassword = async (email, password) => {
 const getUserByEmail = async (email) => {
   try {
     // Use findOne to retrieve a single user document
-    const user = await customerModel.findOne({ email: email });
+    const user = await Assessor.findOne({ email: email });
     return user;
   } catch (error) {
     console.error("Error fetching user by email:", error);
     throw error;
   }
 };
-module.exports = { createCustomer, loginUserWithEmailAndPassword,getCustomers};
+module.exports = { createCustomer, loginUserWithEmailAndPassword,getCustomers,getUserByEmail};

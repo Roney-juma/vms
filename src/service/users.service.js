@@ -1,28 +1,10 @@
 const AWS = require('aws-sdk');
 const moment = require('moment')
 const User  = require('../models/users.model');
+const customerModel = require("../models/customerModel");
 const { ObjectId } = require("mongodb");
-const ApiError = require('../utils/ApiError');
-const axios = require('axios')
-const CryptoJS = require("crypto-js")
-const CENTRAL_URL = process.env.CENTRAL_URL;
-const SECRET_KEY = process.env.SECRET_KEY
-const pagination = require('../middlewares/paginate');
-const { transform, isObject, isEqual, isArray, forEach } = require('lodash')
-const _ = require('lodash')
-const Speakeasy = require("speakeasy")
-const { sendEmail } = require("../middlewares/email");
-const sendSms = require("../helper/sms_helper");
-const { Workbook } = require('exceljs');
-const nationalities = require('@dropdowns/nationalities/json/nationalities.json')
-const { logRequest } = require('../middlewares/logger.middleware');
+const ApiError = require('../utils/ApiError.js');
 // const { createCanvas } = require('canvas')
-const ID = process.env.SECRET_ID_AWS;
-const SECRET = process.env.SECRET_KEY_AWS;
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const config = require("../config/config")
-const { generate } = require("./token.service")
 
 
 /**
@@ -59,8 +41,15 @@ const getUserById = async (id, project = {}) => {
  * @returns {Promise<User>}
  */
 const getUserByEmail = async (email) => {
-    return User.findOne({ email });
-};
+    try {
+      // Use findOne to retrieve a single user document
+      const user = await User.findOne({ email: email });
+      return user;
+    } catch (error) {
+      console.error("Error fetching user by email:", error);
+      throw error;
+    }
+  };
 
 /**
  * Update user by id

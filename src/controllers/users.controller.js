@@ -1,6 +1,19 @@
 const express = require('express');
 const User = require('../models/users.model');
 
+const authService = require("../service/auth.service");
+const tokenService = require("../service/token.service");
+
+
+const login =
+    async (req, res) => {
+        const { email, password } = req.body;
+        const user = await authService.loginUserWithEmailAndPassword(email, password);
+        console.log("Name",user)
+        const tokens = tokenService.GenerateToken(user);
+        res.send({ user, tokens });
+    };
+
 // Create a new admin user
 const createUser = async (req, res) => {
   try {
@@ -69,6 +82,7 @@ const deleteAdminUser = async (req, res) => {
 };
 
 module.exports = {
+    login,
     createUser,
     getAllUsers,
     getAdminUser,
