@@ -97,8 +97,11 @@ const placeBid = async (req, res) => {
       }
   
       const newBid = {
+        bidderType: 'assessor', 
         assessorId,
-        amount
+        amount,
+        bidDate: new Date(), 
+        status: 'pending',
       };
   
       claim.bids.push(newBid);

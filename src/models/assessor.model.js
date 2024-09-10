@@ -15,6 +15,10 @@ const assessorSchema = new Schema({
     email: { type: String, required: true }
   },
   licenseNumber: { type: String},
+  accountType:{
+    type: String,
+    default: 'Assessor',
+  },
   experience: { type: Number, },
   specialties: [String], 
   ratings: {

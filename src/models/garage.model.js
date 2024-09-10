@@ -10,6 +10,10 @@ const garageSchema = new mongoose.Schema({
       required: true,
     },
     contactNumber: { type: String, required: true },
+    accountType:{
+      type: String,
+      default: 'Garage',
+    },
     email: { type: String, required: true },
     services: [{ type: String }],
     rating: { type: Number, min: 1, max: 5, default: 0 },

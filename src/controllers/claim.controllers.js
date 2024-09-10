@@ -153,8 +153,9 @@ const getBidsByClaim = async (req, res) => {
     if (!claim) {
       return res.status(404).json({ error: 'Claim not found' });
       }
-      const bids = claim.bids;
-      res.json(bids);
+      // Filter bids to include only those with bidderType 'assessor'
+    const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
+      res.json(assessorBids);
       } catch (err) {
         res.status(500).json({ error: 'Server error' });
         }

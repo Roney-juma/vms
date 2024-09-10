@@ -78,6 +78,35 @@ const deleteGarage = async (req, res) => {
       res.status(500).json({ error: 'Server error' });
     }
     };
+
+    const placeBid = async (req, res) => {
+      const { garageId, amount } = req.body;
+    
+      try {
+        const claim = await Claim.findById(req.params.id);
+        if (!claim) return res.status(404).json({ error: 'Claim not found' });
+    
+        if (claim.status !== 'Assessed') {
+          return res.status(400).json({ error: 'Bids can only be placed on Assessed claims' });
+        }
+    
+        const newBid = {
+          bidderType: 'garage', 
+          garageId,
+          amount,
+          bidDate: new Date(), 
+          status: 'pending',
+        };
+    
+        claim.bids.push(newBid);
+        await claim.save();
+    
+        res.status(201).json(claim);
+      } catch (err) {
+        res.status(500).json({ error: err });
+      }
+  };
+
   //   Exporting the routes
 module.exports = {
     createGarage,
@@ -86,7 +115,8 @@ module.exports = {
     getGarage,
     updateGarage,
     deleteGarage,
-    getAssessedClaims
+    getAssessedClaims,
+    placeBid
     };
 
 
