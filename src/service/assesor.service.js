@@ -13,11 +13,9 @@ async function getCustomers() {
 }
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await getUserByEmail(email);
-  console.log("Assessor",user)
   const authorized = await user.isPasswordMatch(password);
   if (!authorized) {
-      incrementLoginAttempt(user);
-      return 'Incorrect email or password'
+      return false
   }
 
   return user;

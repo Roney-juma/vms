@@ -12,7 +12,7 @@ app.use(cors({ origin: "*" }));
 app.use("/", router);
  
 app.get("/v1", (req, res) => {
-  res.send("Africa is home");
+  res.send("Land We Love");
 });
  
 app.listen(PORT, (error) => {

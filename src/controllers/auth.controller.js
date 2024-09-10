@@ -6,7 +6,9 @@ const login =
     async (req, res) => {
         const { email, password } = req.body;
         const user = await authService.loginUserWithEmailAndPassword(email, password);
-        console.log("Name",user)
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+            }
         const tokens = tokenService.GenerateToken(user);
         res.send({ user, tokens });
     };

@@ -92,7 +92,7 @@ const claimSchema = new Schema({
   },
   status: { 
     type: String, 
-    enum: ['Pending', 'Approved','Rejected', 'Assessment', 'Awarded', 'RepairBids', 'Garage','Completed'], 
+    enum: ['Pending', 'Approved','Rejected', 'Assessment','Assessed' ,'Awarded', 'RepairBids', 'Garage','Completed'], 
     default: 'Pending' 
   },
   repairs: [{
@@ -104,7 +104,8 @@ const claimSchema = new Schema({
     assessorId: { type: Schema.Types.ObjectId, ref: 'Assessor' },
     awardedAmount: { type: Number },
     awardedDate: { type: Date }
-  }
+  },
+  assessmentReport:{}
 }, { timestamps: true });
 
 const Claim= mongoose.model('Claim', claimSchema);

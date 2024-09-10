@@ -144,6 +144,25 @@ const getAssessorBids = async (req, res) => {
   }
 };
 
+// Submit Assessment Report
+const submitAssessmentReport = async (req, res) => {
+  const { claimId } = req.params;
+  const { assessmentReport } = req.body;
+  try {
+    const claim = await Claim.findById(claimId);
+    if (!claim) {
+      return res.status(404).json({ error: 'Claim not found' });
+      }
+      claim.assessmentReport = assessmentReport;
+      claim.status = 'Assessed';
+      await claim.save();
+      res.json({ message: 'Assessment report submitted successfully',claim:claim });
+      } catch (err) {
+        res.status(500).json({ error: 'Report Not submitted' });
+        }
+        };
+
+
 
 
   
@@ -163,4 +182,5 @@ const getAssessorBids = async (req, res) => {
     getApprovedClaims,
     placeBid,
     getAssessorBids,
+    submitAssessmentReport
     };

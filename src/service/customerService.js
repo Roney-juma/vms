@@ -15,8 +15,7 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await getUserByEmail(email);
   const authorized = await user.isPasswordMatch(password);
   if (!authorized) {
-      incrementLoginAttempt(user);
-      throw new ApiError(401, 'Incorrect email or password');
+      return false
   }
 
   return user;

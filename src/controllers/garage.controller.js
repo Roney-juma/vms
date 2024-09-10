@@ -10,7 +10,7 @@ const login =
     async (req, res) => {
         const { email, password } = req.body;
         const user = await garageService.loginUserWithEmailAndPassword(email, password);
-        console.log("Name",user)
+        
         if (!user) {
           return res.status(401).json({ message: "Invalid email or password" });
           }
@@ -69,6 +69,15 @@ const deleteGarage = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+  const getAssessedClaims = async (req, res) => {
+    try {
+      const claims = await Claim.find({ status: 'Assessed',assessmentReport: { $exists: true } });
+      res.json(claims);
+    } catch (err) {
+      res.status(500).json({ error: 'Server error' });
+    }
+    };
   //   Exporting the routes
 module.exports = {
     createGarage,
@@ -76,7 +85,8 @@ module.exports = {
     getAllGarages,
     getGarage,
     updateGarage,
-    deleteGarage
+    deleteGarage,
+    getAssessedClaims
     };
 
 

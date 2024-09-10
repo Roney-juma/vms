@@ -135,7 +135,6 @@ const awardClaim = async (req, res) => {
 }
 // getAwardedClaims
 const getAwardedClaims = async (req, res) => {
-  console.log("Roney")
   try {
     
     const claims = await Claim.find({ awardedAssessor: { $exists: true } });
@@ -164,7 +163,7 @@ const getBidsByClaim = async (req, res) => {
   // Garage Finds Assessed Claims for Repair
   const garageFindsAssessedClaimsForRepair = async (req, res) => {
     try {
-      const claims = await Claim.find({ status: 'Awarded' });
+      const claims = await Claim.find({ status: 'Assessed' });
       res.status(200).json(claims);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -187,13 +186,13 @@ const getBidsByClaim = async (req, res) => {
   const getAssessedClaimsByGarage = async (req, res) => {
         const garageId = req.params.id;
           try {
-            const claims = await Claim.find({ garage: garageId, status: 'Awarded' });
+            const claims = await Claim.find({ garage: garageId, status: 'Assessed' });
             res.json(claims);
             } catch (error) {
               res.status(500).json({ error: 'Server error' });
               }
-              };
-
+            };
+  // 
 
 
 module.exports = {
