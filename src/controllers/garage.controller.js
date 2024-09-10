@@ -109,6 +109,21 @@ const deleteGarage = async (req, res) => {
         res.status(500).json({ error: err });
       }
   };
+  // Complete Repair
+  const completeRepair = async (req, res) => {
+    try {
+      const claim = await Claim.findById(req.params.id);
+      if (!claim) return res.status(404).json({ error: 'Claim not found'
+      });
+        claim.status = 'Completed';
+        claim.repairDate = new Date();
+        await claim.save();
+        res.json(claim);
+        } catch (err) {
+          res.status(500).json({ error: 'Server error' });
+          }
+          };
+
 
   //   Exporting the routes
 module.exports = {
@@ -119,7 +134,8 @@ module.exports = {
     updateGarage,
     deleteGarage,
     getAssessedClaims,
-    placeBid
+    placeBid,
+    completeRepair
     };
 
 

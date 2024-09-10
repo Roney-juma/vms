@@ -133,6 +133,33 @@ const awardClaim = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 }
+// Award Bid to Garage
+const awardBidToGarage = async (req, res) => {
+  const { bidId } = req.body;
+
+  try {
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: 'Claim not found' });
+
+    const bid = claim.bids.id(bidId);
+    if (!bid || bid.status !== 'pending') {
+      return res.status(400).json({ error: 'Invalid bid' });
+    }
+
+    bid.status = 'awarded';
+    claim.awardedAssessor = {
+      assessorId: bid.assessorId,
+      awardedAmount: bid.amount,
+      awardedDate: Date.now()
+    };
+
+    await claim.save();
+
+    res.json(claim);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+}
 // getAwardedClaims
 const getAwardedClaims = async (req, res) => {
   try {
@@ -209,5 +236,6 @@ module.exports = {
     getAwardedClaims,
     garageFindsAssessedClaimsForRepair,
     getAssessedClaimById,
-    getAssessedClaimsByGarage
+    getAssessedClaimsByGarage,
+    awardBidToGarage
   };
