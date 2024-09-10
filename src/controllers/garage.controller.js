@@ -149,7 +149,7 @@ const getGarageBids = async (req, res) => {
               });
           
               if (garageBids.length === 0) {
-                return res.status(404).json({ error: 'No bids found for this assessor' });
+                return res.status(404).json({ error: 'No bids found for this Garage' });
               }
           
               res.json(garageBids);
