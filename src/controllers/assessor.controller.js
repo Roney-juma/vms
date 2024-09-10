@@ -1,6 +1,6 @@
 const Assessor = require('../models/assessor.model');
 const Claim = require('../models/claim.model');
-
+const bcrypt = require('bcrypt')
 const assessorService = require("../service/assesor.service");
 const tokenService = require("../service/token.service");
 const emailService = require("../service/email.service");
@@ -134,8 +134,8 @@ const placeBid = async (req, res) => {
       const assessor = await Assessor.findById(assessorId);
       if (assessor && assessor.email) {
         emailService.sendEmailNotification(
-          assessor.email, // Recipient email address
-          'New Bid Placed', // Subject of the email
+          assessor.email, 
+          'New Bid Placed',
           `Dear ${assessor.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.` // Email content
         );
       }

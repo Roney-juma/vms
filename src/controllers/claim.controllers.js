@@ -3,6 +3,7 @@ const router = express.Router();
 const Claim = require('../models/claim.model');
 const Customer = require('../models/customerModel')
 const Assessor = require('../models/assessor.model')
+const Garage = require('../models/garage.model')
 const { ObjectId } = require('mongodb');
 const emailService = require("../service/email.service");
 

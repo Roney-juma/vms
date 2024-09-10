@@ -50,8 +50,6 @@ const login =
     - Name: ${savedGarage.name}
     - Email: ${savedGarage.email}
     - Password: ${req.body.password}
-    - Address: ${savedGarage.address}
-    - Phone: ${savedGarage.phone}
     
     You can log in to your account using your registered email address. Please contact us if you have any questions or need further assistance.
     
