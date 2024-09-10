@@ -1,15 +1,36 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+
 const bidSchema = new Schema({
-  assessorId: { type: Schema.Types.ObjectId, ref: 'Assessor', required: true },
-  amount: { type: Number, required: true },
-  bidDate: { type: Date, default: Date.now },
+  bidderType: {
+    type: String,
+    enum: ['assessor', 'garage'],
+    required: true,
+  },
+  assessorId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Assessor', 
+    required: function() { return this.bidderType === 'assessor'; } 
+  },
+  garageId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Garage', 
+    required: function() { return this.bidderType === 'garage'; } 
+  },
+  amount: { 
+    type: Number, 
+    required: true 
+  },
+  bidDate: { 
+    type: Date, 
+    default: Date.now 
+  },
   status: {
     type: String,
     enum: ['pending', 'awarded', 'rejected'],
-    default: 'pending'
-  }
+    default: 'pending',
+  },
 });
 
 const claimSchema = new Schema({
