@@ -4,9 +4,8 @@ const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
 
 async function createCustomer(req, res) {
-  console.log("customerCreated");
+  
   try {
-    console.log("customerCreated1");
     const customerCreated = await customerService.createCustomer(req.body);
 
     res.status(200).json(customerCreated);

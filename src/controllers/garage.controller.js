@@ -1,7 +1,7 @@
 const Garage = require('../models/garage.model');
 const Claim = require('../models/claim.model');
 const { ObjectId } = require('mongodb');
-
+const bcrypt = require('bcrypt')
 const garageService = require("../service/garage.service.js");
 const tokenService = require("../service/token.service");
 
@@ -20,7 +20,10 @@ const login =
 
 const createGarage = async (req, res) => {
     try {
-      const newGarage = new Garage(req.body);
+      const garage = req.body
+      const password = await bcrypt.hash(garage.password,10)
+      garage.password = password
+      const newGarage = new Garage(garage);
       const savedGarage = await newGarage.save();
       res.status(201).json(savedGarage);
     } catch (error) {

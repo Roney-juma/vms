@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError.js');
 
 const loginUserWithEmailAndPassword = async (email, password) => {
     const user = await getUserByEmail(email);
+    console.log(user)
     if (!user) {
         throw new Error('User not found');
         }
