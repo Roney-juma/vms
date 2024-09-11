@@ -140,6 +140,14 @@ const deleteGarage = async (req, res) => {
     
         claim.bids.push(newBid);
         await claim.save();
+        const garage = await Assessor.findById(garageId);
+      if (garage && garage.email) {
+        emailService.sendEmailNotification(
+          garage.email, 
+          'New Bid Placed',
+          `Dear ${garage.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.`
+        );
+      }
     
         res.status(201).json(claim);
       } catch (err) {

@@ -255,6 +255,7 @@ const awardBidToGarage = async (req, res) => {
       awardedAmount: bid.amount,
       awardedDate: Date.now(),
     };
+    claim.status = 'Garage';
 
     await claim.save();
 
