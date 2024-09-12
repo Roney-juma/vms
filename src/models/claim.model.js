@@ -125,6 +125,11 @@ const claimSchema = new Schema({
     awardedAmount: { type: Number },
     awardedDate: { type: Date }
   },
+  awardedGarage: {
+    garageId: { type: Schema.Types.ObjectId, ref: 'Garage' },
+    awardedAmount: { type: Number },
+    awardedDate: { type: Date }
+  },
   repairDate:{type: Date},
   assessmentReport:{},
   supplierBids: [{

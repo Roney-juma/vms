@@ -112,7 +112,7 @@ const deleteGarage = async (req, res) => {
 
   const getAssessedClaims = async (req, res) => {
     try {
-      const claims = await Claim.find({ status: 'Assessed',awardedAssessor: { $exists: false } });
+      const claims = await Claim.find({ status: 'Assessed',awardedGarage: { $exists: false } });
       res.json(claims);
     } catch (err) {
       res.status(500).json({ error: 'Server error' });
