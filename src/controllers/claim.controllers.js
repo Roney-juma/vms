@@ -4,6 +4,7 @@ const Claim = require('../models/claim.model');
 const Customer = require('../models/customerModel')
 const Assessor = require('../models/assessor.model')
 const Garage = require('../models/garage.model')
+const SupplyBid = require('../models/supplyBids.model')
 const { ObjectId } = require('mongodb');
 const emailService = require("../service/email.service");
 
@@ -182,6 +183,11 @@ const awardClaim = async (req, res) => {
       awardedAmount: bid.amount,
       awardedDate: Date.now(),
     };
+    claim.bids.forEach(otherBid => {
+      if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'assessor') {
+        otherBid.status = 'rejected';
+      }
+    });
 
     await claim.save();
 
@@ -247,8 +253,6 @@ const awardBidToGarage = async (req, res) => {
     if (!bid || bid.status !== 'pending') {
       return res.status(400).json({ error: 'Invalid bid' });
     }
-
-    // Update the bid status to 'awarded'
     bid.status = 'awarded';
     claim.awardedGarage = {
       garageId: bid.garageId,
@@ -256,6 +260,11 @@ const awardBidToGarage = async (req, res) => {
       awardedDate: Date.now(),
     };
     claim.status = 'Garage';
+    claim.bids.forEach(otherBid => {
+      if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
+        otherBid.status = 'rejected';
+      }
+    });
 
     await claim.save();
 
@@ -362,7 +371,75 @@ const getGarageBidsByClaim = async (req, res) => {
               res.status(500).json({ error: 'Server error' });
               }
             };
-  // 
+  // Submit Bid for Supply
+  const submitBidForSupply = async (req, res) => {
+    const { claimId } = req.params;
+    const { supplierId, parts } = req.body;
+    try {
+      const claim = await Claim.findById(claimId);
+      const totalCost = parts.reduce((acc, part) => acc + part.partCost, 0);
+      const supplyBid = new SupplyBid({
+        claimId,
+        supplierId,
+        parts,
+        totalCost,
+        status: 'Pending'
+      });
+      await supplyBid.save();
+      // Associate the bid with the claim
+    claim.supplierBids.push(supplyBid._id);
+    await claim.save();
+    res.status(201).json({ message: 'Supply bid submitted successfully', supplyBid });
+    } catch (error) {
+      console.error('Error submitting supply bid:', error);
+      res.status(500).json({ message: 'Supply bid not submitted' });
+      }
+      };
+
+  // Get all supplier Bids for a claim
+  const getSupplierBidsForClaim = async (req, res) => {
+    const claimId = req.params.id;
+    try {
+      const claim = await Claim.findById(claimId).populate('supplierBids');
+    if (!claim) return res.status(404).json({ message: 'Claim not found' });
+
+    res.status(200).json(claim.supplierBids);
+  } catch (error) {
+    console.error('Error fetching supplier bids:', error);
+    res.status(500).json({ message: 'Could not fetch supplier bids' });
+  }
+  };
+
+  // Accept or Reject a Supplier Bid
+  const acceptSupplierBid = async (req, res) => {
+    const { claimId, bidId } = req.params;
+
+  try {
+    const supplyBid = await SupplyBid.findById(bidId);
+    if (!supplyBid) return res.status(404).json({ message: 'Supply bid not found' });
+  
+
+    supplyBid.status = 'Accepted' ;
+    await supplyBid.save();
+    await SupplyBid.updateMany(
+      { _id: { $ne: bidId }, claimId: claimId }, 
+      { $set: { status: 'Rejected' } }
+    );
+    const claim = await Claim.findById(claimId);
+    claim.status = 'Repair';
+
+    await claim.save();
+
+    res.status(200).json({ message: `Supply bid Accepted successfully`, supplyBid });
+  } catch (error) {
+    console.error('Error updating supply bid status:', error);
+    res.status(500).json({ message: 'Could not update supply bid status' });
+  }
+  };
+
+
+
+
 
 
 module.exports = {
@@ -380,5 +457,10 @@ module.exports = {
     getAssessedClaimById,
     getAssessedClaimsByGarage,
     awardBidToGarage,
-    getGarageBidsByClaim
+    getGarageBidsByClaim,
+    submitBidForSupply,
+    getSupplierBidsForClaim,
+    acceptSupplierBid
+
+
   };
