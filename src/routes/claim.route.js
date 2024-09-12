@@ -18,7 +18,8 @@ router.get('/garageBids/:id', claimController.getGarageBidsByClaim)
 router.get('/assessed', claimController.garageFindsAssessedClaimsForRepair);
 router.get('/assessed/:id', claimController.getAssessedClaimById);
 // router.get('/assessed/repair/:id', claimController.getAssessedRepairClaimById);
-router.post('/supplier-bids/:claimId', claimController.awardBidToGarage)
+router.get('/supplier-bids/:claimId', claimController.getSupplierBidsForClaim)
+router.post('/acceptSupplier/:claimId/:bidId', claimController.acceptSupplierBid)
 
 
 

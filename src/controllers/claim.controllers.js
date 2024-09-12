@@ -374,7 +374,7 @@ const getGarageBidsByClaim = async (req, res) => {
 
   // Get all supplier Bids for a claim
   const getSupplierBidsForClaim = async (req, res) => {
-    const claimId = req.params.id;
+    const claimId = req.params.claimId;
     try {
       const claim = await Claim.findById(claimId).populate('supplierBids');
     if (!claim) return res.status(404).json({ message: 'Claim not found' });
