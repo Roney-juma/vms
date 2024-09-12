@@ -11,7 +11,7 @@ router.get('/claimsInGarage',supplierController.getAllClaimsInGarage)
 router.post('partsDelivered/:claimId',supplierController.repairPartsDelivered)
 router.delete('/delete/:id', supplierController.deleteSupplier)
 router.get('/:id', supplierController.getSupplierById)
-router.post('/supplyBid/:id',supplierController.submitBidForSupply)
+router.post('/supplyBid/:claimId',supplierController.submitBidForSupply)
 router.put('/:id',supplierController.updateSupplier)
 router.get('/myBids/:supplierId',supplierController.getMyBidHistory)
 

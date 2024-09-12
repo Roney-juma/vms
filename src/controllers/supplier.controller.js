@@ -1,4 +1,5 @@
 const Supplier = require('../models/supplier.model')
+const SupplyBid = require('../models/supplyBids.model')
 const Claim = require('../models/claim.model');
 const bcrypt = require('bcrypt')
 const tokenService = require("../service/token.service");
@@ -157,7 +158,7 @@ const submitBidForSupply = async (req, res) => {
       });
       await supplyBid.save();
       // Associate the bid with the claim
-    claim.supplierBids.push(supplyBid._id);
+    claim.supplierBids.push(supplyBid);
     await claim.save();
     res.status(201).json({ message: 'Supply bid submitted successfully', supplyBid });
     } catch (error) {

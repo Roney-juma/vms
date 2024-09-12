@@ -210,39 +210,47 @@ const deleteGarage = async (req, res) => {
   };
   
 
-const getGarageBids = async (req, res) => {
-            const { garageId } = req.params;
-          
-            try {
-              // Find all claims that have bids placed by the specified assessor
-              const claims = await Claim.find({ "bids.garageId": garageId });
-          
-              // Extract and collect only the bids placed by the specified assessor
-              const garageBids = [];
-              claims.forEach(claim => {
-                claim.bids.forEach(bid => {
-                  if (bid.garageId.toString() === garageId) {
-                    garageBids.push({
-                      claimId: claim._id,
-                      bidId: bid._id,
-                      amount: bid.amount,
-                      status: bid.status,
-                      bidDate: bid.bidDate,
-                      claimStatus: claim.status
-                    });
-                  }
-                });
-              });
-          
-              if (garageBids.length === 0) {
-                return res.status(404).json({ error: 'No bids found for this Garage' });
-              }
-          
-              res.json(garageBids);
-            } catch (err) {
-              res.status(500).json({ error: 'Server error' });
-            }
-          };
+  const getGarageBids = async (req, res) => {
+    const { garageId } = req.params; // The garage ID to filter bids by
+  
+    try {
+      // Find all claims that contain bids placed by any garage
+      const claims = await Claim.find({ 'bids.bidderType': 'garage' });
+      console.log("Claims",claims)
+      const garageBids = [];
+  
+      // Loop through each claim and filter the bids array
+      claims.forEach(claim => {
+        // Filter only the bids that belong to the specified garage
+        const filteredBids = claim.bids.filter(bid => 
+          bid.bidderType === 'garage' && bid.garageId.toString() === garageId
+        );
+  
+        // Push the relevant information from the filtered bids to the result array
+        filteredBids.forEach(bid => {
+          garageBids.push({
+            claimId: claim._id,
+            bidId: bid._id,
+            amount: bid.amount,
+            status: bid.status,
+            bidDate: bid.bidDate,
+            claimStatus: claim.status,
+            vehicleType: claim.vehiclesInvolved[0]
+          });
+        });
+      });
+  
+      if (garageBids.length === 0) {
+        return res.status(404).json({ error: 'No bids found for this Garage' });
+      }
+  
+      res.json(garageBids);
+    } catch (err) {
+      console.error('Error fetching garage bids:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  
 
 
   //   Exporting the routes
