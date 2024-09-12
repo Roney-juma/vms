@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const supplyBidSchema = new mongoose.Schema({
     claimId: { type: mongoose.Schema.Types.ObjectId, ref: 'Claim', required: true },
     supplierId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: true },
@@ -9,7 +11,7 @@ const supplyBidSchema = new mongoose.Schema({
     bidDate: { type: Date, default: Date.now },
     status: { 
       type: String, 
-      enum: ['Pending', 'Accepted', 'Rejected'], 
+      enum: ['Pending', 'Accepted','Delivered', 'Rejected'], 
       default: 'Pending' 
     }
   }, { timestamps: true });

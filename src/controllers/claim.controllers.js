@@ -371,30 +371,6 @@ const getGarageBidsByClaim = async (req, res) => {
               res.status(500).json({ error: 'Server error' });
               }
             };
-  // Submit Bid for Supply
-  const submitBidForSupply = async (req, res) => {
-    const { claimId } = req.params;
-    const { supplierId, parts } = req.body;
-    try {
-      const claim = await Claim.findById(claimId);
-      const totalCost = parts.reduce((acc, part) => acc + part.partCost, 0);
-      const supplyBid = new SupplyBid({
-        claimId,
-        supplierId,
-        parts,
-        totalCost,
-        status: 'Pending'
-      });
-      await supplyBid.save();
-      // Associate the bid with the claim
-    claim.supplierBids.push(supplyBid._id);
-    await claim.save();
-    res.status(201).json({ message: 'Supply bid submitted successfully', supplyBid });
-    } catch (error) {
-      console.error('Error submitting supply bid:', error);
-      res.status(500).json({ message: 'Supply bid not submitted' });
-      }
-      };
 
   // Get all supplier Bids for a claim
   const getSupplierBidsForClaim = async (req, res) => {
@@ -410,7 +386,7 @@ const getGarageBidsByClaim = async (req, res) => {
   }
   };
 
-  // Accept or Reject a Supplier Bid
+  // Accept a Supplier Bid
   const acceptSupplierBid = async (req, res) => {
     const { claimId, bidId } = req.params;
 
@@ -458,7 +434,6 @@ module.exports = {
     getAssessedClaimsByGarage,
     awardBidToGarage,
     getGarageBidsByClaim,
-    submitBidForSupply,
     getSupplierBidsForClaim,
     acceptSupplierBid
 
