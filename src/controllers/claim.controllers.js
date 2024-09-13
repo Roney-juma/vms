@@ -7,6 +7,8 @@ const Garage = require('../models/garage.model')
 const SupplyBid = require('../models/supplyBids.model')
 const { ObjectId } = require('mongodb');
 const emailService = require("../service/email.service");
+const Notification = require('../models/notification.model');
+
 
 
 const createClaim = async (req, res) => {
@@ -188,6 +190,17 @@ const awardClaim = async (req, res) => {
         otherBid.status = 'rejected';
       }
     });
+    // Trigger notification for the winning assessor
+    const recipientId = bid.bidderType === 'assessor' ? bid.assessorId : bid.garageId;
+    const recipientType = bid.bidderType;
+
+    await Notification.create({
+      recipientId,
+      recipientType,
+      content: `Your bid for claim ID: ${claim._id} has been ${bid.status}.`
+    });
+
+
 
     await claim.save();
 
@@ -264,6 +277,15 @@ const awardBidToGarage = async (req, res) => {
       if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
         otherBid.status = 'rejected';
       }
+    });
+    // Trigger notification for the winning Garage
+    const recipientId = bid.bidderType === 'assessor' ? bid.assessorId : bid.garageId;
+    const recipientType = bid.bidderType;
+
+    await Notification.create({
+      recipientId,
+      recipientType,
+      content: `Your bid for claim ID: ${claim._id} has been ${bid.status}.`
     });
 
     await claim.save();
