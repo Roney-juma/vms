@@ -150,25 +150,28 @@ const getAssessorBids = async (req, res) => {
   const { assessorId } = req.params;
 
   try {
-    // Find all claims that have bids placed by the specified assessor
+    // Find all claims that have at least one bid placed by the specified assessor
     const claims = await Claim.find({ "bids.assessorId": assessorId });
 
     // Extract and collect only the bids placed by the specified assessor
     const assessorBids = [];
-    claims.forEach(claim => {
-      claim.bids.forEach(bid => {
-        if (bid.assessorId.toString() === assessorId) {
-          assessorBids.push({
-            claimId: claim._id,
-            bidId: bid._id,
-            amount: bid.amount,
-            status: bid.status,
-            bidDate: bid.bidDate,
-            claimStatus: claim.status
-          });
-        }
+    for (const claim of claims) {
+      const relevantBids = claim.bids.filter(
+        (bid) => bid.assessorId && bid.assessorId.toString() === assessorId
+      );
+
+      // Add relevant bids to the assessorBids array
+      relevantBids.forEach((bid) => {
+        assessorBids.push({
+          claimId: claim._id,
+          bidId: bid._id,
+          amount: bid.amount,
+          status: bid.status,
+          bidDate: bid.bidDate,
+          claimStatus: claim.status,
+        });
       });
-    });
+    }
 
     if (assessorBids.length === 0) {
       return res.status(404).json({ error: 'No bids found for this assessor' });
@@ -176,9 +179,11 @@ const getAssessorBids = async (req, res) => {
 
     res.json(assessorBids);
   } catch (err) {
+    console.error('Error fetching assessor bids:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 // Submit Assessment Report
 const submitAssessmentReport = async (req, res) => {
