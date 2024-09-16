@@ -324,6 +324,7 @@ const getAwardedClaims = async (req, res) => {
   try {
     
     const claims = await Claim.find({ awardedAssessor: { $exists: true } });
+    console.log("This is it",claims)
     res.json(claims);
     } catch (error) {
       res.status(500).send(error);

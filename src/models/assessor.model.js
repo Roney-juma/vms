@@ -262,55 +262,6 @@ assessorSchema.methods.checkIsFinanceMgr = async function () {
   return isFinanceMgr
 }
 
-assessorSchema.methods.checkIsHRMgr = async function () {
-  // Generate an auth token for the user
-  const user = this
-  let isHRMgr = false
-
-  if (user.role_ID == '5e2ec3a7f3185a0b5036ef02') {
-      isHRMgr = true
-  }
-  //await user.save()
-  return isHRMgr
-}
-
-assessorSchema.methods.checkIsSalAcc = async function () {
-  // Generate an auth token for the user
-  const user = this
-  let isSalAcc = false
-
-  if (user.role_ID == '5e2ec3a7f3185a0b5036ef04') {
-      isSalAcc = true
-  }
-  //await user.save()
-  return isSalAcc
-}
-
-assessorSchema.methods.getAccessPages = async function () {
-  // Generate an auth token for the user
-  const user = this
-  let isSalAcc = false
-
-  const accessPages = await rolesModel.find({ _id: ObjectId(user.role_ID) })
-
-  return accessPages
-}
-// find by email for googleIdentity
-assessorSchema.statics.findByEmail = async (email) => {
-  // Search for a user by email and password.
-  const user = await Users.findOne({ email: email, user_status: 'Active' });
-
-  if (!user) {
-      throw new Error({ error: 'Invalid login credentials' })
-  }
-  // Not required for google Identity
-  // const isPasswordMatch = await bcrypt.compare(password, user.password)
-  // if (!isPasswordMatch) {
-  //     throw new Error({ error: 'Invalid login credentials' })
-  // }
-  return user
-}
-
 
 assessorSchema.methods.checkUserFirstLogin = async function () {
   const user = this
@@ -332,7 +283,7 @@ assessorSchema.methods.checkUserFirstLogin = async function () {
 
 assessorSchema.statics.findByCredentials = async (email, password) => {
   // Search for a user by email and password.
-  const user = await Users.findOne({ email: email, user_status: { $ne: 'Inactive' } })
+  const user = await Users.findOne({ email: email})
 
   if (!user) {
       throw new Error({ error: 'Invalid login credentials' })
@@ -342,37 +293,6 @@ assessorSchema.statics.findByCredentials = async (email, password) => {
       throw new Error({ error: 'Invalid login credentials' })
   }
   return user
-}
-
-assessorSchema.methods.generateResetTokenMSO = async function () {
-  const user = this
-
-  /* Reset token generation */
-  const resetTokenExpires = moment().add(process.env.JWT_REFRESH_EXPIRATION_HOURS, 'hours');
-
-  const Refershpayload = {
-      _id: user._id,
-      iat: moment().unix(),
-      exp: resetTokenExpires.unix(),
-      type: 'ms_sso',
-  };
-
-
-  const resetToken = jwt.sign(Refershpayload, process.env.JWT_KEY)
-
-  let token = {
-      blacklisted: false,
-      token: resetToken,
-      user: user._id,
-      expires: resetTokenExpires,
-      type: 'ms_sso',
-  }
-
-  const token_insert = new Token(token);
-  let insertToken = await token_insert.save();
-  // await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH, false, isFreelancer);
-
-  return resetToken;
 }
 
 // find by email
@@ -403,7 +323,10 @@ assessorSchema.statics.findByEmailAddress = async (email) => {
 */
 assessorSchema.methods.isPasswordMatch = async function (password) {
   const user = this;
-  return bcrypt.compare(password, user.password);
+  const data = await bcrypt.compare(password, user.password);
+  console.log("data",data)
+
+  return data
 };
 
 

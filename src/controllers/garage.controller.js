@@ -25,6 +25,7 @@ const login =
       try {
         // Extract garage data from the request body
         const garage = req.body;
+        const pp = req.body.password
     
         // Hash the password
         const password = await bcrypt.hash(garage.password, 10);
@@ -35,6 +36,7 @@ const login =
     
         // Save the new garage
         const savedGarage = await newGarage.save();
+        console.log(pp)
     
         // Send email notification to the garage with their new account details
         if (savedGarage && savedGarage.email) {
@@ -49,7 +51,7 @@ const login =
     
     - Name: ${savedGarage.name}
     - Email: ${savedGarage.email}
-    - Password: ${req.body.password}
+    - Password: ${pp}
     
     You can log in to your account using your registered email address. Please contact us if you have any questions or need further assistance.
     

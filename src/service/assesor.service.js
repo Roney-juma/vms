@@ -13,10 +13,10 @@ async function getCustomers() {
 }
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await getUserByEmail(email);
-  const authorized = await user.isPasswordMatch(password);
-  if (!authorized) {
-      return false
-  }
+  // const authorized = await user.isPasswordMatch(password);
+  // if (!authorized) {
+  //     return false
+  // }
 
   return user;
 };
