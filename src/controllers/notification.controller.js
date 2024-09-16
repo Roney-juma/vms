@@ -33,6 +33,7 @@ const createNotification = async (req, res) => {
             content
             });
             await notification.save();
+            io.emit(`notification-${recipientId}`, newNotification);
             res.status(201).json({ message: 'Notification created successfully' });
             } catch (error) {
                 res.status(500).json({ message: 'Error creating notification' });

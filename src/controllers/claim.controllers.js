@@ -253,7 +253,7 @@ Admin Team`
 };
 
 // Award Bid to Garage
-const awardBidToGarage = async (req, res) => {
+const awardBidToGarage = async (req, res, io) => {
   const { bidId } = req.body;
 
   try {
@@ -278,6 +278,7 @@ const awardBidToGarage = async (req, res) => {
         otherBid.status = 'rejected';
       }
     });
+
     // Trigger notification for the winning Garage
     const recipientId = bid.bidderType === 'assessor' ? bid.assessorId : bid.garageId;
     const recipientType = bid.bidderType;
@@ -289,11 +290,10 @@ const awardBidToGarage = async (req, res) => {
     });
 
     await claim.save();
-
     // Fetch the garage details
     const garage = await Garage.findById(bid.garageId);
     if (garage && garage.email) {
-      // Notify the garage
+      // Notify the garage via email
       emailService.sendEmailNotification(
         garage.email,
         'Bid Award Notification',
@@ -317,6 +317,7 @@ Admin Team`
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 // getAwardedClaims
 const getAwardedClaims = async (req, res) => {
