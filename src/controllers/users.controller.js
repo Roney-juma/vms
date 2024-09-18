@@ -14,23 +14,57 @@ const login =
         res.send({ user, tokens });
     };
 
-// Create a new admin user
+
 const createUser = async (req, res) => {
   try {
     const { username, password, fullName, email, role } = req.body;
-    const newAdminUser = new User({
+
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User with this username or email already exists' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
       username,
-      password, 
+      password: hashedPassword, 
       fullName,
       email,
       role
     });
-    const savedAdminUser = await newAdminUser.save();
-    res.status(201).json(savedAdminUser);
+
+    const savedUser = await newUser.save();
+
+    // Send email notification with account details
+    if (savedUser && savedUser.email) {
+      await emailService.sendEmailNotification(
+        savedUser.email,
+        'Welcome to Ave Insurance - Your Account Details',
+        `Dear ${savedUser.fullName},
+
+Welcome to Ave Insurance! Your account has been successfully created.
+
+Here are your account details:
+- Username: ${savedUser.username}
+- Email: ${savedUser.email}
+
+Please use your registered email and the password you set during registration to log in.
+
+If you have any questions, feel free to contact us.
+
+Best Regards,
+Admin Team`
+      );
+    }
+
+    
+    res.status(201).json(savedUser); 
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Get all users
 const getAllUsers = async (req, res) => {

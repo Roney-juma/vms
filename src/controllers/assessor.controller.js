@@ -15,26 +15,37 @@ const login =
         res.send({ user, tokens });
     };
 // Create new assessor
+
 const createAssessor = async (req, res) => {
   try {
-    // Create a new assessor from the request body
-    const newAssessor = new Assessor(req.body);
-    const password = await bcrypt.hash(newAssessor.password,10)
-    newAssessor.password = password
-    const assessor = await newAssessor.save();
+    const assessorData = req.body;
+    const plainPassword = assessorData.password;
+    const existingAssessor = await Assessor.findOne({ email: assessorData.email });
+    if (existingAssessor) {
+      return res.status(409).json({ message: 'Assessor already exists' });
+    }
 
-    if (assessor && assessor.email) {
-      // Send email notification with login credentials
-      emailService.sendEmailNotification(
-        assessor.email,
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    assessorData.password = hashedPassword;
+
+    // Create a new Assessor instance
+    const newAssessor = new Assessor(assessorData);
+
+    // Save the new assessor
+    const savedAssessor = await newAssessor.save();
+
+    // Send email notification with login credentials
+    if (savedAssessor && savedAssessor.email) {
+      await emailService.sendEmailNotification(
+        savedAssessor.email,
         'Welcome To Ave Insurance',
-        `Dear ${assessor.name},
+        `Dear ${savedAssessor.name},
 
 You have successfully been registered to Ave Insurance as an Assessor.
 
 Your login credentials are as follows:
-Username: ${assessor.email}
-Password: ${req.body.password}
+Username: ${savedAssessor.email}
+Password: ${plainPassword}
 
 Please keep this information secure.
 
@@ -42,13 +53,12 @@ Best Regards,
 Admin Team`
       );
     }
-    res.status(201).json(assessor);
+    res.status(201).json(savedAssessor);
   } catch (err) {
     console.error('Error creating assessor:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
-
   
 
 //   Get all Assessors

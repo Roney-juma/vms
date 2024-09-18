@@ -3,9 +3,16 @@ const bcrypt = require('bcrypt')
 const ApiError = require('../utils/ApiError.js');
 
 async function createCustomer(cus) {
+  const existingCustomer = await customerModel.findOne({ email: cus.email });
   
-  const password = await bcrypt.hash(cus.password,10)
-  cus.password = password
+  if (existingCustomer) {
+    throw new Error('Customer already exists');
+  }
+
+  const password = await bcrypt.hash(cus.password, 10);
+  cus.password = password;
+
+  // Create new customer
   return await customerModel.create(cus);
 }
 async function getCustomers() {

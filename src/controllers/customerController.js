@@ -11,7 +11,7 @@ async function createCustomer(req, res) {
 
     if (customerCreated && customerCreated.email) {
       // Notify the customer with their new account details
-      emailService.sendEmailNotification(
+      await emailService.sendEmailNotification(
         customerCreated.email,
         'Welcome to Ave Insurance - Your New Account Details',
         `Dear ${customerCreated.firstName} ${customerCreated.lastName},
@@ -35,14 +35,17 @@ Admin Team`
     }
 
     // Respond with the created customer object
-    res.status(200).json(customerCreated);
+    res.status(201).json(customerCreated); // 201 indicates resource created
   } catch (error) {
     console.error('Error creating customer:', error);
-    res.status(500).json({ error: error.message });
+
+    if (error.message === 'Customer already exists') {
+      res.status(409).json({ error: 'Customer already exists' }); // Conflict
+    } else {
+      res.status(500).json({ error: error.message }); // Internal Server Error
+    }
   }
 }
-
-
 
 const login =
     async (req, res) => {

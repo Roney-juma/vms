@@ -8,6 +8,59 @@ const garageService = require("../service/garage.service.js");
 const tokenService = require("../service/token.service");
 const emailService = require("../service/email.service");
 
+const createGarage = async (req, res) => {
+  try {
+    // Extract garage data from the request body
+    const garage = req.body;
+    const plainPassword = garage.password;
+
+    // Check if the garage already exists (assuming unique email)
+    const existingGarage = await Garage.findOne({ email: garage.email });
+    if (existingGarage) {
+      return res.status(409).json({ message: 'Garage already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    garage.password = hashedPassword;
+
+    // Create a new Garage instance
+    const newGarage = new Garage(garage);
+
+    // Save the new garage
+    const savedGarage = await newGarage.save();
+
+    // Send email notification to the garage with their new account details
+    if (savedGarage && savedGarage.email) {
+      await emailService.sendEmailNotification(
+        savedGarage.email,
+        'Welcome to Ave Insurance - Your New Account Details',
+        `Dear ${savedGarage.name},
+
+We are delighted to welcome you to Ave Insurance! Your new account has been successfully created.
+
+Here are your account details:
+
+- Name: ${savedGarage.name}
+- Email: ${savedGarage.email}
+- Password: ${plainPassword}
+
+You can log in to your account using your registered email address. Please contact us if you have any questions or need further assistance.
+
+Thank you for choosing Ave Insurance.
+
+Best Regards,
+Admin Team`
+      );
+    }
+    res.status(201).json(savedGarage); 
+  } catch (error) {
+    console.error('Error creating garage:', error);
+    res.status(500).json({ message: error.message }); 
+  }
+};
+
+
 
 const login =
     async (req, res) => {
@@ -20,55 +73,8 @@ const login =
         const tokens = tokenService.GenerateToken(user);
         res.send({ user, tokens });
     };
+    
 
-    const createGarage = async (req, res) => {
-      try {
-        // Extract garage data from the request body
-        const garage = req.body;
-        const pp = req.body.password
-    
-        // Hash the password
-        const password = await bcrypt.hash(garage.password, 10);
-        garage.password = password;
-    
-        // Create a new Garage instance
-        const newGarage = new Garage(garage);
-    
-        // Save the new garage
-        const savedGarage = await newGarage.save();
-        console.log(pp)
-    
-        // Send email notification to the garage with their new account details
-        if (savedGarage && savedGarage.email) {
-          emailService.sendEmailNotification(
-            savedGarage.email,
-            'Welcome to Ave Insurance - Your New Account Details',
-            `Dear ${savedGarage.name},
-    
-    We are delighted to welcome you to Ave Insurance! Your new account has been successfully created.
-    
-    Here are your account details:
-    
-    - Name: ${savedGarage.name}
-    - Email: ${savedGarage.email}
-    - Password: ${pp}
-    
-    You can log in to your account using your registered email address. Please contact us if you have any questions or need further assistance.
-    
-    Thank you for choosing Ave Insurance.
-    
-    Best Regards,
-    Admin Team`
-          );
-        }
-    
-        res.status(201).json(savedGarage);
-      } catch (error) {
-        console.error('Error creating garage:', error);
-        res.status(400).json({ message: error.message });
-      }
-    };
-    
 //   Get All Garages
 const getAllGarages = async (req, res) => {
     try {
