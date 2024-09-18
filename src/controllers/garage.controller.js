@@ -131,37 +131,53 @@ const deleteGarage = async (req, res) => {
       const { garageId, amount } = req.body;
     
       try {
+        // Find the claim by ID
         const claim = await Claim.findById(req.params.id);
         if (!claim) return res.status(404).json({ error: 'Claim not found' });
     
+        // Check if the claim is in 'Assessed' status
         if (claim.status !== 'Assessed') {
           return res.status(400).json({ error: 'Bids can only be placed on Assessed claims' });
         }
     
+        // Check if the garage has already placed a bid on this claim
+        const existingBid = claim.bids.find(bid => bid.garageId && bid.garageId.toString() === garageId);
+        if (existingBid) {
+          return res.status(400).json({ error: 'You have already placed a bid on this claim' });
+        }
+    
+        // Create a new bid
         const newBid = {
-          bidderType: 'garage', 
+          bidderType: 'garage',
           garageId,
           amount,
-          bidDate: new Date(), 
+          bidDate: new Date(),
           status: 'pending',
         };
     
+        // Add the new bid to the claim
         claim.bids.push(newBid);
         await claim.save();
-        const garage = await Assessor.findById(garageId);
-      if (garage && garage.email) {
-        emailService.sendEmailNotification(
-          garage.email, 
-          'New Bid Placed',
-          `Dear ${garage.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.`
-        );
-      }
     
+        // Find the garage and send email notification
+        const garage = await Garage.findById(garageId); // Assuming 'Garage' is the model for garages
+        if (garage && garage.email) {
+          await emailService.sendEmailNotification(
+            garage.email,
+            'New Bid Placed',
+            `Dear ${garage.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.`
+          );
+        }
+    
+        // Respond with the updated claim object
         res.status(201).json(claim);
       } catch (err) {
-        res.status(500).json({ error: err });
+        console.error('Error placing bid:', err);
+        res.status(500).json({ error: 'Server error' });
       }
-  };
+    };
+    
+
   // Complete Repair
   const completeRepair = async (req, res) => {
     try {
@@ -169,14 +185,19 @@ const deleteGarage = async (req, res) => {
       const claim = await Claim.findById(req.params.id);
       if (!claim) return res.status(404).json({ error: 'Claim not found' });
   
-      // Update the claim status to 'Completed'
+      // Only update the status if the current status is 'Repair'
+      if (claim.status !== 'Repair') {
+        return res.status(400).json({ error: 'Claim must be in Repair  to mark it as Completed' });
+      }
+  
+      // Update the claim status to 'Completed' and set the repair date
       claim.status = 'Completed';
       claim.repairDate = new Date();
       await claim.save();
   
       // Notify the claimant that the repair is complete and an assessor will verify
       if (claim.claimant && claim.claimant.email) {
-        emailService.sendEmailNotification(
+        await emailService.sendEmailNotification(
           claim.claimant.email,
           'Repair Completed - Verification Pending',
           `Dear ${claim.claimant.name},
@@ -194,7 +215,7 @@ const deleteGarage = async (req, res) => {
       if (claim.awardedAssessor && claim.awardedAssessor.assessorId) {
         const assessor = await Assessor.findById(claim.awardedAssessor.assessorId);
         if (assessor && assessor.email) {
-          emailService.sendEmailNotification(
+          await emailService.sendEmailNotification(
             assessor.email,
             'Verification Required - Repair Completed',
             `Dear ${assessor.name},
@@ -215,8 +236,7 @@ const deleteGarage = async (req, res) => {
       console.error('Error completing repair:', err);
       res.status(500).json({ error: 'Server error' });
     }
-  };
-  
+  }; 
 
   const getGarageBids = async (req, res) => {
     const { garageId } = req.params; // The garage ID to filter bids by
