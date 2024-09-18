@@ -1,5 +1,7 @@
 const Assessor = require('../models/assessor.model');
 const Claim = require('../models/claim.model');
+const Garage = require('../models/garage.model');
+const customerModel = require("../models/customerModel");
 const bcrypt = require('bcrypt')
 const assessorService = require("../service/assesor.service");
 const tokenService = require("../service/token.service");
@@ -20,9 +22,11 @@ const createAssessor = async (req, res) => {
   try {
     const assessorData = req.body;
     const plainPassword = assessorData.password;
+    const existingGarage = await Garage.findOne({ email: assessorData.email });
+    const existingCustomer = await customerModel.findOne({ email: assessorData.email });
     const existingAssessor = await Assessor.findOne({ email: assessorData.email });
-    if (existingAssessor) {
-      return res.status(409).json({ message: 'Assessor already exists' });
+    if (existingGarage || existingCustomer || existingAssessor) {
+      return res.status(409).json({ message: 'We Already have a user with this Email' });
     }
 
     const hashedPassword = await bcrypt.hash(plainPassword, 10);

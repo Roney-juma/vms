@@ -1,8 +1,7 @@
 const Garage = require('../models/garage.model');
 const Claim = require('../models/claim.model');
 const Assessor = require('../models/assessor.model.js');
-
-const { ObjectId } = require('mongodb');
+const customerModel = require("../models/customerModel");
 const bcrypt = require('bcrypt')
 const garageService = require("../service/garage.service.js");
 const tokenService = require("../service/token.service");
@@ -14,10 +13,11 @@ const createGarage = async (req, res) => {
     const garage = req.body;
     const plainPassword = garage.password;
 
-    // Check if the garage already exists (assuming unique email)
     const existingGarage = await Garage.findOne({ email: garage.email });
-    if (existingGarage) {
-      return res.status(409).json({ message: 'Garage already exists' });
+    const existingCustomer = await customerModel.findOne({ email: garage.email });
+    const existingAssessor = await Assessor.findOne({ email: garage.email });
+    if (existingGarage || existingCustomer || existingAssessor) {
+      return res.status(409).json({ message: 'We Already have a user with this Email' });
     }
 
     // Hash the password
