@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
+const { ObjectId } = require("mongodb")
 
 const garageSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -16,7 +17,16 @@ const garageSchema = new mongoose.Schema({
     },
     email: { type: String, required: true },
     services: [{ type: String }],
-    rating: { type: Number, min: 1, max: 5, default: 0 },
+    ratings: {
+      averageRating: { type: Number, default: 0 },
+      totalRatings: { type: Number, default: 0 },
+      reviews: [{
+        customerId: { type: ObjectId, ref: 'Customer'},
+        rating: { type: Number},
+        feedback: { type: String },
+        createdAt: { type: Date, default: Date.now }
+      }]
+    }
   }, { timestamps: true });
 
   garageSchema.methods.isPasswordMatch = async function (password) {
