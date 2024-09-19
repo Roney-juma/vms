@@ -58,6 +58,7 @@ Admin Team`
 };
 
 
+
 // Get all claims
 const getClaims = async (req, res) => {
   try {
@@ -459,7 +460,7 @@ module.exports = {
     awardBidToGarage,
     getGarageBidsByClaim,
     getSupplierBidsForClaim,
-    acceptSupplierBid
+    acceptSupplierBid,
 
 
   };

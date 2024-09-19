@@ -1,8 +1,10 @@
-
+const Claim = require('../models/claim.model');
+const Customer = require("../models/customerModel");
 const customerService = require("../service/customerService");
 const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
 const emailService = require("../service/email.service");
+
 
 async function createCustomer(req, res) {
   try {
@@ -67,8 +69,35 @@ const getAllCustomers = async (req, res) => {
   }
 };
 
+const getCustomerClaims = async (req, res) => {
+  try {
+    // Find the customer by ID
+    const customerId = req.params.customerId;
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    // Find all claims associated with this customer
+    const claims = await Claim.find({ 'claimant.email': customer.email });
+
+    // If no claims are found, return a message
+    if (claims.length === 0) {
+      return res.status(404).json({ message: 'No claims found for this customer' });
+    }
+
+    // Respond with the list of claims
+    res.status(200).json(claims);
+  } catch (error) {
+    console.error('Error fetching customer claims:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   createCustomer,
   login,
-  getAllCustomers
+  getAllCustomers,
+  getCustomerClaims,
 };
