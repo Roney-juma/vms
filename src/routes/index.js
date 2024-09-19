@@ -7,6 +7,7 @@ const auth = require("./auth.route")
 const upload = require("./imageUploads.route")
 const assessors = require("./assesor")
 const garages = require("./garage.route")
+const suppliers = require("./supplier.route")
 
 const router = express.Router()
 
@@ -18,5 +19,7 @@ router.use("/auth", auth)
 router.use("/images", upload)
 router.use("/assessors", assessors)
 router.use("/garages", garages)
+router.use("/suppliers", suppliers)
+
 
 module.exports  = router

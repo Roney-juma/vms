@@ -13,5 +13,7 @@ router.delete('/delete/:id', assesorController.deleteAssessor)
 router.get('/:id', assesorController.getAssessorById)
 router.post('/bid/:id',assesorController.placeBid)
 router.put('/:id',assesorController.updateAssessor)
+router.get('/myBids/:assessorId',assesorController.getAssessorBids)
+
 
 module.exports = router;

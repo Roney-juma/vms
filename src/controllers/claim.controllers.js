@@ -2,26 +2,62 @@ const express = require('express');
 const router = express.Router();
 const Claim = require('../models/claim.model');
 const Customer = require('../models/customerModel')
+const Assessor = require('../models/assessor.model')
+const Garage = require('../models/garage.model')
+const SupplyBid = require('../models/supplyBids.model')
 const { ObjectId } = require('mongodb');
+const emailService = require("../service/email.service");
+const Notification = require('../models/notification.model');
+
 
 
 const createClaim = async (req, res) => {
-    try {
-      claimant = await Customer.findById(req.body.customerId)
-      claimant.name = `${claimant.firstName} ${claimant.lastName}`
-      req.body.claimant = {
-        name: claimant.name,
-        address: claimant.address, // Assuming these fields exist in the claimant object
-        phone: claimant.phone,
-        email: claimant.email
-      };
-      const claim = new Claim(req.body);
-      await claim.save();
-      res.status(201).send(claim);
-    } catch (error) {
-      res.status(400).send(error);
+  try {
+    // Find the customer (claimant) by ID
+    const claimant = await Customer.findById(req.body.customerId);
+    
+    if (!claimant) {
+      return res.status(404).send({ error: 'Customer not found' });
     }
-  };
+
+    // Construct claimant's full name and contact details
+    claimant.name = `${claimant.firstName} ${claimant.lastName}`;
+    req.body.claimant = {
+      name: claimant.name,
+      address: claimant.address, // Assuming these fields exist in the claimant object
+      phone: claimant.phone,
+      email: claimant.email,
+    };
+
+    // Create a new claim
+    const claim = new Claim(req.body);
+    await claim.save();
+
+    // Send email notification to the customer
+    if (claimant.email) {
+      emailService.sendEmailNotification(
+        claimant.email,
+        'Claim Submission Confirmation',
+        `Dear ${claimant.name},
+
+Your claim has been successfully submitted and is now being processed. Our team will review your claim and get back to you shortly.
+
+Thank you for choosing Ave Insurance.
+
+Best Regards,
+Admin Team`
+      );
+    }
+
+    // Respond with the newly created claim object
+    res.status(201).send(claim);
+  } catch (error) {
+    console.error('Error creating claim:', error);
+    res.status(400).send({ error: 'Server error' });
+  }
+};
+
+
 
 // Get all claims
 const getClaims = async (req, res) => {
@@ -47,21 +83,43 @@ const getClaimsByCustomer = async (req, res) => {
 
 
 // Approve a claim
- const approveClaim = async (req, res) => {
+const approveClaim = async (req, res) => {
   try {
+    // Update the claim status to 'Approved'
     const claim = await Claim.findByIdAndUpdate(
       req.params.id,
       { status: 'Approved' },
       { new: true }
     );
+
     if (!claim) {
       return res.status(404).send('Claim not found');
     }
+
+    // Retrieve the customer information
+    const claimant = claim.claimant;
+
+    if (claimant && claimant.email) {
+      emailService.sendEmailNotification(
+        claimant.email,
+        'Claim Approval Notification',
+        `Dear ${claimant.name},
+
+We are pleased to inform you that your claim with ID: ${claim._id} has been approved. The compensation will be processed shortly.
+
+Thank you for choosing Ave Insurance.
+
+Best Regards,
+Admin Team`
+      );
+    }
     res.status(200).send(claim);
   } catch (error) {
-    res.status(500).send(error);
+    console.error('Error approving claim:', error);
+    res.status(500).send({ error: 'Server error' });
   }
 };
+
 
 // Delete a claim
 const deleteClaim = async (req, res) => {
@@ -111,33 +169,163 @@ const awardClaim = async (req, res) => {
   const { bidId } = req.body;
 
   try {
+    // Find the claim by ID
     const claim = await Claim.findById(req.params.id);
     if (!claim) return res.status(404).json({ error: 'Claim not found' });
 
+    // Find the bid within the claim's bids array
     const bid = claim.bids.id(bidId);
     if (!bid || bid.status !== 'pending') {
       return res.status(400).json({ error: 'Invalid bid' });
     }
 
+    // Update the bid status to 'awarded'
     bid.status = 'awarded';
     claim.awardedAssessor = {
       assessorId: bid.assessorId,
       awardedAmount: bid.amount,
-      awardedDate: Date.now()
+      awardedDate: Date.now(),
     };
+    claim.bids.forEach(otherBid => {
+      if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'assessor') {
+        otherBid.status = 'rejected';
+      }
+    });
+    // Trigger notification for the winning assessor
+    const recipientId = bid.bidderType === 'assessor' ? bid.assessorId : bid.garageId;
+    const recipientType = bid.bidderType;
+
+    await Notification.create({
+      recipientId,
+      recipientType,
+      content: `Your bid for claim ID: ${claim._id} has been ${bid.status}.`
+    });
+
+
 
     await claim.save();
 
+    // Fetch the assessor details
+    const assessor = await Assessor.findById(bid.assessorId);
+    if (assessor && assessor.email) {
+      // Notify the assessor
+      emailService.sendEmailNotification(
+        assessor.email,
+        'Claim Award Notification',
+        `Dear ${assessor.name},
+
+Congratulations! You have been awarded the claim with ID: ${claim._id}. You are required to submit a report within 3 days.
+
+Please ensure that the report is submitted on time to facilitate the next steps in the claims process.
+
+Best Regards,
+Admin Team`
+      );
+
+      // Notify the claimant
+      if (claim.claimant && claim.claimant.email) {
+        emailService.sendEmailNotification(
+          claim.claimant.email,
+          'Assessor Visit Notification',
+          `Dear ${claim.claimant.name},
+
+We are pleased to inform you that your claim with ID: ${claim._id} has been awarded to an assessor. The assessor, ${assessor.name}, will be visiting to assess the state of your vehicle.
+
+Here are the assessor's contact details:
+- Phone: ${assessor.phone}
+- Email: ${assessor.email}
+
+Please feel free to reach out to the assessor to coordinate the visit.
+
+Thank you for choosing Ave Insurance.
+
+Best Regards,
+Admin Team`
+        );
+      }
+    }
+
+    // Respond with the updated claim object
     res.json(claim);
   } catch (err) {
+    console.error('Error awarding claim:', err);
     res.status(500).json({ error: 'Server error' });
   }
-}
+};
+
+// Award Bid to Garage
+const awardBidToGarage = async (req, res, io) => {
+  const { bidId } = req.body;
+
+  try {
+    // Find the claim by ID
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) return res.status(404).json({ error: 'Claim not found' });
+
+    // Find the bid within the claim's bids array
+    const bid = claim.bids.id(bidId);
+    if (!bid || bid.status !== 'pending') {
+      return res.status(400).json({ error: 'Invalid bid' });
+    }
+    bid.status = 'awarded';
+    claim.awardedGarage = {
+      garageId: bid.garageId,
+      awardedAmount: bid.amount,
+      awardedDate: Date.now(),
+    };
+    claim.status = 'Garage';
+    claim.bids.forEach(otherBid => {
+      if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
+        otherBid.status = 'rejected';
+      }
+    });
+
+    // Trigger notification for the winning Garage
+    const recipientId = bid.bidderType === 'assessor' ? bid.assessorId : bid.garageId;
+    const recipientType = bid.bidderType;
+
+    await Notification.create({
+      recipientId,
+      recipientType,
+      content: `Your bid for claim ID: ${claim._id} has been ${bid.status}.`
+    });
+
+    await claim.save();
+    // Fetch the garage details
+    const garage = await Garage.findById(bid.garageId);
+    if (garage && garage.email) {
+      // Notify the garage via email
+      emailService.sendEmailNotification(
+        garage.email,
+        'Bid Award Notification',
+        `Dear ${garage.name},
+
+Congratulations! Your bid for the claim with ID: ${claim._id} has been awarded. You are requested to proceed with the repair of the vehicle as soon as possible.
+
+Please ensure that all necessary repairs are completed in a timely and professional manner.
+
+Thank you for your cooperation.
+
+Best Regards,
+Admin Team`
+      );
+    }
+
+    // Respond with the updated claim object
+    res.json(claim);
+  } catch (err) {
+    console.error('Error awarding bid to garage:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 // getAwardedClaims
 const getAwardedClaims = async (req, res) => {
   try {
     
     const claims = await Claim.find({ awardedAssessor: { $exists: true } });
+    console.log("This is it",claims)
     res.json(claims);
     } catch (error) {
       res.status(500).send(error);
@@ -153,12 +341,28 @@ const getBidsByClaim = async (req, res) => {
     if (!claim) {
       return res.status(404).json({ error: 'Claim not found' });
       }
-      const bids = claim.bids;
-      res.json(bids);
+      // Filter bids to include only those with bidderType 'assessor'
+    const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
+      res.json(assessorBids);
       } catch (err) {
         res.status(500).json({ error: 'Server error' });
         }
   };
+const getGarageBidsByClaim = async (req, res) => {
+    const claimId = req.params.id;
+    
+    try {
+      const claim = await Claim.findById(claimId);
+      if (!claim) {
+        return res.status(404).json({ error: 'Claim not found' });
+        }
+        // Filter bids to include only those with bidderType 'assessor'
+      const assessorBids = claim.bids.filter(bid => bid.bidderType === 'garage');
+        res.json(assessorBids);
+        } catch (err) {
+          res.status(500).json({ error: 'Server error' });
+          }
+    };
 
   // Garage Finds Assessed Claims for Repair
   const garageFindsAssessedClaimsForRepair = async (req, res) => {
@@ -192,7 +396,51 @@ const getBidsByClaim = async (req, res) => {
               res.status(500).json({ error: 'Server error' });
               }
             };
-  // 
+
+  // Get all supplier Bids for a claim
+  const getSupplierBidsForClaim = async (req, res) => {
+    const claimId = req.params.claimId;
+    try {
+      const claim = await Claim.findById(claimId).populate('supplierBids');
+    if (!claim) return res.status(404).json({ message: 'Claim not found' });
+
+    res.status(200).json(claim.supplierBids);
+  } catch (error) {
+    console.error('Error fetching supplier bids:', error);
+    res.status(500).json({ message: 'Could not fetch supplier bids' });
+  }
+  };
+
+  // Accept a Supplier Bid
+  const acceptSupplierBid = async (req, res) => {
+    const { claimId, bidId } = req.params;
+
+  try {
+    const supplyBid = await SupplyBid.findById(bidId);
+    if (!supplyBid) return res.status(404).json({ message: 'Supply bid not found' });
+  
+
+    supplyBid.status = 'Accepted' ;
+    await supplyBid.save();
+    await SupplyBid.updateMany(
+      { _id: { $ne: bidId }, claimId: claimId }, 
+      { $set: { status: 'Rejected' } }
+    );
+    const claim = await Claim.findById(claimId);
+    claim.status = 'Repair';
+
+    await claim.save();
+
+    res.status(200).json({ message: `Supply bid Accepted successfully`, supplyBid });
+  } catch (error) {
+    console.error('Error updating supply bid status:', error);
+    res.status(500).json({ message: 'Could not update supply bid status' });
+  }
+  };
+
+
+
+
 
 
 module.exports = {
@@ -208,5 +456,11 @@ module.exports = {
     getAwardedClaims,
     garageFindsAssessedClaimsForRepair,
     getAssessedClaimById,
-    getAssessedClaimsByGarage
+    getAssessedClaimsByGarage,
+    awardBidToGarage,
+    getGarageBidsByClaim,
+    getSupplierBidsForClaim,
+    acceptSupplierBid,
+
+
   };

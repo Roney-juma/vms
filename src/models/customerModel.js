@@ -38,6 +38,10 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    accountType:{
+      type: String,
+      default: 'Customer',
+    },
     isDeleted: {
       type: Boolean,
       default: false,

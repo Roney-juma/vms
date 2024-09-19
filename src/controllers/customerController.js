@@ -1,33 +1,34 @@
-
 const customerService = require("../service/customerService");
-const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
 
-async function createCustomer(req, res) {
-  console.log("customerCreated");
+const createCustomer = async (req, res) => {
   try {
-    console.log("customerCreated1");
     const customerCreated = await customerService.createCustomer(req.body);
 
-    res.status(200).json(customerCreated);
+    if (customerCreated && customerCreated.email) {
+      await customerService.sendWelcomeEmail(customerCreated);
+    }
+
+    res.status(201).json(customerCreated); // Resource created
   } catch (error) {
-    res.status(500).json({ error: error.message });
-    // crossOriginIsolated.log({error: error.message})
-    // res.json({ error: error.message });
+    console.error('Error creating customer:', error);
+    if (error.message === 'Customer already exists') {
+      res.status(409).json({ error: 'Customer already exists' });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
   }
-}
+};
 
-
-const login =
-    async (req, res) => {
-        const { email, password } = req.body;
-        const user = await customerService.loginUserWithEmailAndPassword(email, password);
-        if (!user) {
-          return res.status(401).json({ message: "Invalid email or password" });
-          }
-        const tokens = tokenService.GenerateToken(user);
-        res.send({ user, tokens });
-    };
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const { user, tokens } = await customerService.loginUser(email, password);
+    res.status(200).json({ user, tokens });
+  } catch (error) {
+    res.status(401).json({ message: error.message });
+  }
+};
 
 const getAllCustomers = async (req, res) => {
   try {
@@ -38,8 +39,19 @@ const getAllCustomers = async (req, res) => {
   }
 };
 
+const getCustomerClaims = async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+    const claims = await customerService.getCustomerClaims(customerId);
+    res.status(200).json(claims);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createCustomer,
   login,
-  getAllCustomers
+  getAllCustomers,
+  getCustomerClaims,
 };

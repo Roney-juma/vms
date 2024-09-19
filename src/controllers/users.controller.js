@@ -1,36 +1,75 @@
 const express = require('express');
 const User = require('../models/users.model');
-
+const Garage = require('../models/garage.model');
+const Assessor = require('../models/assessor.model.js');
+const customerModel = require("../models/customerModel");
 const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
+const emailService = require("../service/email.service");
 
 
 const login =
     async (req, res) => {
         const { email, password } = req.body;
         const user = await authService.loginUserWithEmailAndPassword(email, password);
-        console.log("Name",user)
         const tokens = tokenService.GenerateToken(user);
         res.send({ user, tokens });
     };
 
-// Create a new admin user
+
 const createUser = async (req, res) => {
   try {
     const { username, password, fullName, email, role } = req.body;
-    const newAdminUser = new User({
+
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingGarage = await Garage.findOne({ email: cus.email });
+    const existingCustomer = await customerModel.findOne({ email: cus.email });
+    const existingAssessor = await Assessor.findOne({ email: cus.email });
+    if (existingUser || existingGarage || existingCustomer || existingAssessor) {
+      return res.status(409).json({ message: 'We Already have a user with this Email' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
       username,
-      password, // Remember to hash this password before saving!
+      password: hashedPassword, 
       fullName,
       email,
       role
     });
-    const savedAdminUser = await newAdminUser.save();
-    res.status(201).json(savedAdminUser);
+
+    const savedUser = await newUser.save();
+
+    // Send email notification with account details
+    if (savedUser && savedUser.email) {
+      await emailService.sendEmailNotification(
+        savedUser.email,
+        'Welcome to Ave Insurance - Your Account Details',
+        `Dear ${savedUser.fullName},
+
+Welcome to Ave Insurance! Your account has been successfully created.
+
+Here are your account details:
+- Username: ${savedUser.username}
+- Email: ${savedUser.email}
+
+Please use your registered email and the password you set during registration to log in.
+
+If you have any questions, feel free to contact us.
+
+Best Regards,
+Admin Team`
+      );
+    }
+
+    
+    res.status(201).json(savedUser); 
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Get all users
 const getAllUsers = async (req, res) => {

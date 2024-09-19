@@ -17,5 +17,6 @@ const router = express.Router();
 router.post("/register", customerController.createCustomer)
 router.post("/login", customerController.login)
 router.get("/", customerController.getAllCustomers)
+router.get('/myClaims/:customerId', customerController.getCustomerClaims)
 
 module.exports = router;

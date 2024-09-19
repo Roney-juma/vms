@@ -1,15 +1,35 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+
 const bidSchema = new Schema({
-  assessorId: { type: Schema.Types.ObjectId, ref: 'Assessor', required: true },
-  amount: { type: Number, required: true },
-  bidDate: { type: Date, default: Date.now },
+  bidderType: {
+    type: String,
+    enum: ['assessor', 'garage'],
+  },
+  assessorId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Assessor', 
+    required: function() { return this.bidderType === 'assessor'; } 
+  },
+  garageId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Garage', 
+    required: function() { return this.bidderType === 'garage'; } 
+  },
+  amount: { 
+    type: Number, 
+    required: true 
+  },
+  bidDate: { 
+    type: Date, 
+    default: Date.now 
+  },
   status: {
     type: String,
     enum: ['pending', 'awarded', 'rejected'],
-    default: 'pending'
-  }
+    default: 'pending',
+  },
 });
 
 const claimSchema = new Schema({
@@ -92,7 +112,7 @@ const claimSchema = new Schema({
   },
   status: { 
     type: String, 
-    enum: ['Pending', 'Approved','Rejected', 'Assessment','Assessed' ,'Awarded', 'RepairBids', 'Garage','Completed'], 
+    enum: ['Pending', 'Approved','Rejected', 'Assessment','Assessed' ,'Awarded', 'Repair', 'Garage','Completed'], 
     default: 'Pending' 
   },
   repairs: [{
@@ -105,7 +125,17 @@ const claimSchema = new Schema({
     awardedAmount: { type: Number },
     awardedDate: { type: Date }
   },
-  assessmentReport:{}
+  awardedGarage: {
+    garageId: { type: Schema.Types.ObjectId, ref: 'Garage' },
+    awardedAmount: { type: Number },
+    awardedDate: { type: Date }
+  },
+  repairDate:{type: Date},
+  assessmentReport:{},
+  supplierBids: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SupplyBid'
+  }]
 }, { timestamps: true });
 
 const Claim= mongoose.model('Claim', claimSchema);
