@@ -8,6 +8,7 @@ const upload = require("./imageUploads.route")
 const assessors = require("./assesor")
 const garages = require("./garage.route")
 const suppliers = require("./supplier.route")
+const rating = require("./rating.route")
 
 const router = express.Router()
 
@@ -20,6 +21,7 @@ router.use("/images", upload)
 router.use("/assessors", assessors)
 router.use("/garages", garages)
 router.use("/suppliers", suppliers)
+router.use("/rating", rating)
 
 
 module.exports  = router

@@ -1,5 +1,5 @@
 const tokenService = require('./token.service');
-const assesorService = require('./assesor.service');
+const assesorService = require('./assessor.service');
 const ApiError = require('../utils/ApiError.js');
 
 const loginUserWithEmailAndPassword = async (email, password) => {

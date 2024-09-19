@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { ObjectId } = require("mongodb")
 
 const supplierSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -7,7 +8,16 @@ const supplierSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   location: { type: String, required: true },
   company: { type: String, required: true },
-  ratings: { type: Number, min: 0, max: 5 },
+  ratings: {
+    averageRating: { type: Number, default: 0 },
+    totalRatings: { type: Number, default: 0 },
+    reviews: [{
+      customerId: { type: ObjectId, ref: 'Customer'},
+      rating: { type: Number},
+      feedback: { type: String },
+      createdAt: { type: Date, default: Date.now }
+    }]
+  },
   password: {
     type: String,
     required: true,

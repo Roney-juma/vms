@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const ObjectId = require('mongoose').Types.ObjectId;
+const { ObjectId } = require("mongodb")
 const Token = require('./token.model')
 
 
@@ -22,8 +22,14 @@ const assessorSchema = new Schema({
   experience: { type: Number, },
   specialties: [String], 
   ratings: {
-    type: Number,
-    default: 0
+    averageRating: { type: Number, default: 0 },
+    totalRatings: { type: Number, default: 0 },
+    reviews: [{
+      customerId: { type: ObjectId, ref: 'Customer'},
+      rating: { type: Number},
+      feedback: { type: String },
+      createdAt: { type: Date, default: Date.now }
+    }]
   }
 }, { timestamps: true });
 
@@ -324,7 +330,6 @@ assessorSchema.statics.findByEmailAddress = async (email) => {
 assessorSchema.methods.isPasswordMatch = async function (password) {
   const user = this;
   const data = await bcrypt.compare(password, user.password);
-  console.log("data",data)
 
   return data
 };
