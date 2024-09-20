@@ -183,6 +183,29 @@ const getGarageBids = async (garageId) => {
 
   return garageBids;
 };
+const resetPassword = async (email, newPassword) => {
+  const user = await Garage.findOne({ email });
+  if (!user) {
+      throw new Error('User Does not Exist');
+  }
+
+  // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
+  // if (!isTokenValid || user.resetPasswordExpires < Date.now()) {
+  //     throw new Error('Token is invalid or expired');
+  // }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+
+  // Clear reset token and expiration
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  return { message: 'Password has been reset successfully' };
+};
+
 
 module.exports = {
   createGarage,
@@ -194,5 +217,6 @@ module.exports = {
   getAssessedClaims,
   placeBid,
   completeRepair,
-  getGarageBids
+  getGarageBids,
+  resetPassword
 };

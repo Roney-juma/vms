@@ -4,6 +4,7 @@ const express =require("express")
 const router = express.Router();
 
 router.post('/login',garageController.login)
+router.post('/reset-password', garageController.resetPassword);
 router.post('/create',garageController.createGarage)
 router.get('/',garageController.getAllGarages)
 router.get('/assessedClaims',garageController.getAssessedClaims)

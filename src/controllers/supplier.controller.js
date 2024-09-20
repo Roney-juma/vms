@@ -1,6 +1,8 @@
 const supplierService = require('../service/supplier.service');
 const tokenService = require("../service/token.service");
 const emailService = require("../service/email.service");
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
 const createSupplier = async (req, res) => {
     try {
@@ -145,6 +147,43 @@ const repairPartsDelivered = async (req, res) => {
     }
 };
 
+const requestPasswordReset = async (email) => {
+    // Check if user exists
+    const user = await supplierService.findByEmail(email);
+    if (!user) {
+        throw new Error('User with this email does not exist');
+    }
+
+    // Generate a token (valid for 1 hour)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = await bcrypt.hash(resetToken, 10);
+    
+    // Save hashed token and expiration date to the user in the database
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+    await user.save();
+
+    // Send reset link to the user's email
+    const resetUrl = `https://your-app.com/reset-password?token=${resetToken}&email=${email}`;
+    await emailService.sendEmailNotification(
+        user.email,
+        'Password Reset Request',
+        `Dear ${user.name},\n\nYou have requested a password reset. Click the link below to reset your password:\n${resetUrl}\n\nIf you did not request this, please ignore this email.`
+    );
+
+    return { message: 'Password reset email sent' };
+};
+
+const resetPassword = async (req, res) => {
+  try {
+      const { email, newPassword } = req.body;
+      const response = await supplierService.resetPassword(email, newPassword);
+      res.status(200).json(response);
+  } catch (err) {
+      res.status(400).json({ error: err.message });
+  }
+};
+
 module.exports = {
     createSupplier,
     login,
@@ -155,5 +194,7 @@ module.exports = {
     getMyBidHistory,
     submitBidForSupply,
     getAllClaimsInGarage,
-    repairPartsDelivered
+    repairPartsDelivered,
+    requestPasswordReset,
+    resetPassword
 };

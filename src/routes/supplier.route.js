@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/create',supplierController.createSupplier)
 router.post('/login',supplierController.login)
+router.post('/reset-password', supplierController.resetPassword);
 router.get('/',supplierController.getAllSuppliers)
 router.get('/claimsInGarage',supplierController.getAllClaimsInGarage)
 router.post('partsDelivered/:claimId',supplierController.repairPartsDelivered)

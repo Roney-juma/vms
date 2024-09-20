@@ -1,123 +1,83 @@
-const express = require('express');
-const User = require('../models/users.model');
-const Garage = require('../models/garage.model');
-const Assessor = require('../models/assessor.model.js');
-const customerModel = require("../models/customerModel");
 const authService = require("../service/auth.service");
 const tokenService = require("../service/token.service");
-const emailService = require("../service/email.service");
+const userService = require("../service/users.service");
 
-
-const login =
-    async (req, res) => {
+const login = async (req, res) => {
+    try {
         const { email, password } = req.body;
-        const user = await authService.loginUserWithEmailAndPassword(email, password);
+        const user = await userService.loginUserWithEmailAndPassword(email, password);
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
         const tokens = tokenService.GenerateToken(user);
-        res.send({ user, tokens });
-    };
-
+        res.status(200).json({ user, tokens });
+    } catch (error) {
+        res.status(500).json({ message: 'Login failed', error: error.message });
+    }
+};
 
 const createUser = async (req, res) => {
-  try {
-    const { username, password, fullName, email, role } = req.body;
-
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    const existingGarage = await Garage.findOne({ email: cus.email });
-    const existingCustomer = await customerModel.findOne({ email: cus.email });
-    const existingAssessor = await Assessor.findOne({ email: cus.email });
-    if (existingUser || existingGarage || existingCustomer || existingAssessor) {
-      return res.status(409).json({ message: 'We Already have a user with this Email' });
+    try {
+        const savedUser = await userService.createUser(req.body);
+        res.status(201).json(savedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      username,
-      password: hashedPassword, 
-      fullName,
-      email,
-      role
-    });
-
-    const savedUser = await newUser.save();
-
-    // Send email notification with account details
-    if (savedUser && savedUser.email) {
-      await emailService.sendEmailNotification(
-        savedUser.email,
-        'Welcome to Ave Insurance - Your Account Details',
-        `Dear ${savedUser.fullName},
-
-Welcome to Ave Insurance! Your account has been successfully created.
-
-Here are your account details:
-- Username: ${savedUser.username}
-- Email: ${savedUser.email}
-
-Please use your registered email and the password you set during registration to log in.
-
-If you have any questions, feel free to contact us.
-
-Best Regards,
-Admin Team`
-      );
-    }
-
-    
-    res.status(201).json(savedUser); 
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
 };
 
-
-// Get all users
 const getAllUsers = async (req, res) => {
-  try {
-    const adminUsers = await User.find();
-    res.status(200).json(adminUsers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+    try {
+        const users = await userService.getAllUsers();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
-// Get a specific admin user
 const getAdminUser = async (req, res) => {
-  try {
-    const adminUser = await User.findById(req.params.id);
-    if (!adminUser) {
-      return res.status(404).json({ message: 'Admin user not found' });
+    try {
+        const user = await userService.getUserById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.status(200).json(adminUser);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
-// Update an admin user
 const updateAdminUser = async (req, res) => {
-  try {
-    const updatedAdminUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedAdminUser) {
-      return res.status(404).json({ message: 'Admin user not found' });
+    try {
+        const updatedUser = await userService.updateUser(req.params.id, req.body);
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.status(200).json(updatedAdminUser);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 };
 
-// Delete an admin user
 const deleteAdminUser = async (req, res) => {
-  try {
-    const deletedAdminUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedAdminUser) {
-      return res.status(404).json({ message: 'Admin user not found' });
+    try {
+        const deletedUser = await userService.deleteUser(req.params.id);
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.status(200).json({ message: 'Admin user deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        const response = await userService.resetPassword(email, newPassword);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 };
 
 module.exports = {
@@ -126,5 +86,6 @@ module.exports = {
     getAllUsers,
     getAdminUser,
     updateAdminUser,
-    deleteAdminUser
+    deleteAdminUser,
+    resetPassword,
 };
