@@ -1,35 +1,42 @@
-const jwtDecode = require('jwt-decode');
-// const { Role } = require("../models")
-const { User } = require("../models")
-// const logger = require('../middlewares/loggers');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs');
+const { TokenIssuer, TokenSecret } = require('../constants/encryption.constants');
 
-async function verifyToken(req, res, next) {
-  const header = req.headers.authorization;
+const folderPath = path.resolve(`${process.cwd()}/keys`);
+const publicKey = fs.readFileSync(`${folderPath}/public.pem`, 'utf8');
 
-  if (!header) {
-    logger.info(`No Token Provided`);
-    return res.status(403).send({ message: 'No token provided.' });
+
+const verifyToken = (roles = []) => (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Get token from Authorization header
+
+  if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
   }
 
-  const token = header.split(' ')[1];
   try {
-    const decoded = jwtDecode(token);
-    // Check if the token is expired
-    if (Date.now() >= decoded.exp * 1000) {
-      logger.info(`Token Expired`);
-      return res.status(401).send({ message: 'Token expired.' });
-    }
-    const role = await Role.findById(decoded.role_id).select('role_name').exec();
-    const user = await User.findById(decoded._id).select('first_name last_name _id').exec();
-    req.userId = decoded._id;
-    req.user =user
-    // req.roleName = role.role_name;
-    // req.userName = user.first_name;
-    next();
+      jwt.verify(token, publicKey.replace(/\\n/gm, '\n'), {
+          issuer: TokenIssuer,
+          algorithms: ['RS512'],
+      }, (err, decoded) => {
+          if (err) {
+              return res.status(401).json({ message: 'Invalid or expired token' });
+          }
+
+          // Token is valid, attach decoded user info to request object
+          req.user = decoded.payload;
+
+          // Check if the user's role is in the allowed roles
+          if (roles.length && !roles.includes(req.user.role_ID)) {
+              return res.status(403).json({ message: 'Forbidden: Restricted Access' });
+          }
+
+          next();
+      });
   } catch (err) {
-    logger.error(`Unauthorized - ${err}`);
-    return res.status(401).send({ message: 'Unauthorized.' });
+      console.error('Error verifying token:', err);
+      return res.status(401).json({ message: 'Unauthorized' });
   }
-}
+};
 
 module.exports = verifyToken;

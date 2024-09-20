@@ -1,5 +1,6 @@
 const express = require('express');
 const ratingController = require('../controllers/rating.controller');
+const verifyToken = require('../middlewheres/verifyToken');
 const router = express.Router();
 
 // Route for submitting ratings

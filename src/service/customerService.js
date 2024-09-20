@@ -74,11 +74,35 @@ const sendWelcomeEmail = async (customer) => {
   await emailService.sendEmailNotification(customer.email, subject, message);
 };
 
+const resetPassword = async (email, newPassword) => {
+  const user = await Customer.findOne({ email });
+  if (!user) {
+      throw new Error('Invalid request');
+  }
+
+  // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
+  // if (!isTokenValid || user.resetPasswordExpires < Date.now()) {
+  //     throw new Error('Token is invalid or expired');
+  // }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+
+  // Clear reset token and expiration
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  return { message: 'Password has been reset successfully' };
+};
+
 module.exports = {
   createCustomer,
   loginUser,
   getCustomers,
   getCustomerClaims,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  resetPassword,
 };
 

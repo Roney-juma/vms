@@ -1,96 +1,109 @@
-const AWS = require('aws-sdk');
-const moment = require('moment')
-const User  = require('../models/users.model');
+const bcrypt = require('bcrypt');
+const User = require('../models/users.model');
+const Garage = require('../models/garage.model');
+const Assessor = require('../models/assessor.model.js');
 const customerModel = require("../models/customerModel");
-const { ObjectId } = require("mongodb");
-const ApiError = require('../utils/ApiError.js');
-// const { createCanvas } = require('canvas')
+const emailService = require('./email.service');
 
+const createUser = async (userData) => {
+    const { username, password, fullName, email, role, phone, department, position } = userData;
 
-/**
- * Create a user
- * @param {Object} userBody
- * @returns {Promise<User>}
- */
-const createUser = async (userBody) => {
-    return User.create(userBody);
-};
-
-/**
- * Query for users
- * @param {Object} filter - Mongo filter
- * @param {Object} options - Query options
- * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
- * @param {number} [options.limit] - Maximum number of results per page (default = 10)
- * @param {number} [options.page] - Current page (default = 1)
- * @returns {Promise<QueryResult>}
- */
-
-/**
- * Get user by id
- * @param {ObjectId} id
- * @returns {Promise<User>}
- */
-const getUserById = async (id, project = {}) => {
-    return await User.findById(id, project);
-};
-
-/**
- * Get user by email
- * @param {string} email
- * @returns {Promise<User>}
- */
-const getUserByEmail = async (email) => {
-    try {
-      // Use findOne to retrieve a single user document
-      const user = await User.findOne({ email: email });
-      return user;
-    } catch (error) {
-      console.error("Error fetching user by email:", error);
-      throw error;
+    // Check if the user with the same email or username already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+        throw new Error('User with this email or username already exists');
     }
-  };
 
-/**
- * Update user by id
- * @param {ObjectId} userId
- * @param {Object} updateBody
- * @returns {Promise<User>}
- */
-const updateUserById = async (userId, updateBody) => {
-    const user = await getUserById(userId);
+    // Hash the password before saving the user
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user with the provided details
+    const newUser = new User({
+        username,
+        password: hashedPassword,
+        fullName,
+        email,
+        role,
+        phone,
+        department,
+        position
+    });
+
+    // Save the new user
+    const savedUser = await newUser.save();
+
+    // Send email notification with account details
+    if (savedUser && savedUser.email) {
+        await emailService.sendEmailNotification(
+            savedUser.email,
+            'Welcome to Ave Insurance - Your Account Details',
+            `Dear ${savedUser.fullName},
+Welcome to Ave Insurance! Your account has been successfully created.
+Here are your account details:
+- Username: ${savedUser.username}
+- Email: ${savedUser.email}
+Please use your registered email and password to log in.
+If you have any questions, feel free to contact us.
+Best Regards,
+Admin Team`
+        );
+    }
+
+    return savedUser;
+};
+
+const getAllUsers = async () => {
+    return await User.find();
+};
+
+const getUserById = async (userId) => {
+    return await User.findById(userId);
+};
+
+const updateUser = async (userId, updateData) => {
+    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+};
+
+const deleteUser = async (userId) => {
+    return await User.findByIdAndDelete(userId);
+};
+
+const resetPassword = async (email, newPassword) => {
+    const user = await User.findOne({ email });
     if (!user) {
-        throw new ApiError(404, 'User not found');
+        throw new Error('User not found');
     }
-    return User.findOneAndUpdate({ _id: ObjectId(user._id) }, { $set: updateBody }, { new: true });
-};
 
-/**
- * Delete user by id
- * @param {ObjectId} userId
- * @returns {Promise<User>}
- */
-const deleteUserById = async (userId) => {
-    let user = await User.findByIdAndUpdate({ "_id": ObjectId(userId) }, { is_deleted: true })
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { message: 'Password has been reset successfully' };
+};
+const loginUserWithEmailAndPassword = async (email, password) => {
+    const user = await User.findOne({ email });
+
     if (!user) {
-        throw new ApiError(404, "Unable to delete User")
+        console.log("User not found");
+        return false;
     }
+
+    const authorized = await bcrypt.compare(password, user.password);
+    
+    if (!authorized) {
+        return false; 
+    }
+
     return user;
-}
+};
 
-// Update a user on the ID
-const updateUserOnId = async (userId, updateUserBody) => {
-    const userResult = await getUserById(userId);
-    if (!userResult) {
-        throw new ApiError(404, 'User Not found');
-    }
-    return User.findOneAndUpdate({ _id: ObjectId(userId) }, { $set: updateUserBody }, { new: true });
-}
+
 module.exports = {
     createUser,
+    getAllUsers,
     getUserById,
-    getUserByEmail,
-    updateUserById,
-    deleteUserById,
-    updateUserOnId,
+    updateUser,
+    deleteUser,
+    resetPassword,
+    loginUserWithEmailAndPassword
 };

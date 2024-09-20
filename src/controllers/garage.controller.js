@@ -106,6 +106,15 @@ const getGarageBids = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const resetPassword = async (req, res) => {
+  try {
+      const { email, newPassword } = req.body;
+      const response = await garageService.resetPassword(email, newPassword);
+      res.status(200).json(response);
+  } catch (err) {
+      res.status(400).json({ error: err.message });
+  }
+};
 
 module.exports = {
   createGarage,
@@ -117,5 +126,6 @@ module.exports = {
   getAssessedClaims,
   placeBid,
   completeRepair,
-  getGarageBids
+  getGarageBids,
+  resetPassword
 };

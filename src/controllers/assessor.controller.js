@@ -112,6 +112,15 @@ const submitAssessmentReport = async (req, res) => {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
+const resetPassword = async (req, res) => {
+  try {
+      const { email, newPassword } = req.body;
+      const response = await assessorService.resetPassword(email, newPassword);
+      res.status(200).json(response);
+  } catch (err) {
+      res.status(400).json({ error: err.message });
+  }
+};
 
 module.exports = {
   login,
@@ -124,4 +133,5 @@ module.exports = {
   placeBid,
   getAssessorBids,
   submitAssessmentReport,
+  resetPassword
 };

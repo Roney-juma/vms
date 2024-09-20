@@ -17,12 +17,13 @@ const GenerateToken = (user) => {
         user_status: user.user_status,
         phone: user.phone,
         is_deleted: user.is_deleted,
+        accountType: user.accountType,
     };
 
-    const encryptedData = Encrypt(JSON.stringify(data));
+    // const encryptedData = Encrypt(JSON.stringify(data));
 
     const token = jwt.sign(
-        { payload: encryptedData },
+        { payload: data },
         {
             key: privateKey.replace(/\\n/gm, '\n'),
             passphrase: TokenSecret,

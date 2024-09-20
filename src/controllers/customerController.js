@@ -49,9 +49,20 @@ const getCustomerClaims = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+      const { email, newPassword } = req.body;
+      const response = await customerService.resetPassword(email, newPassword);
+      res.status(200).json(response);
+  } catch (err) {
+      res.status(400).json({ error: err.message });
+  }
+};
+
 module.exports = {
   createCustomer,
   login,
   getAllCustomers,
   getCustomerClaims,
+  resetPassword
 };

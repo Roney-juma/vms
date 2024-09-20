@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/create',assesorController.createAssessor)
 router.post('/login',assesorController.login)
+router.post('/reset-password', assesorController.resetPassword);
 router.get('/',assesorController.getAllAssessors )
 router.get('/approvedClaims',assesorController.getApprovedClaims)
 router.post('/submitReport/:claimId',assesorController.submitAssessmentReport)
