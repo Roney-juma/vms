@@ -82,14 +82,21 @@ const resetPassword = async (email, newPassword) => {
 };
 const loginUserWithEmailAndPassword = async (email, password) => {
     const user = await User.findOne({ email });
-    console.log("User", user)
-    const authorized = await bcrypt.compare(user.password,password);
+
+    if (!user) {
+        console.log("User not found");
+        return false;
+    }
+
+    const authorized = await bcrypt.compare(password, user.password);
+    
     if (!authorized) {
-        return false
+        return false; 
     }
 
     return user;
 };
+
 
 module.exports = {
     createUser,
