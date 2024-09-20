@@ -1,5 +1,6 @@
 const assesorController = require("../controllers/assessor.controller")
 const express =require("express")
+const verifyToken = require("../middlewheres/verifyToken");
 
 const router = express.Router();
 

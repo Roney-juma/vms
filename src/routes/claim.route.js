@@ -1,5 +1,6 @@
 const claimController = require("../controllers/claim.controllers")
 const express =require("express")
+const verifyToken = require("../middlewheres/verifyToken");
 
 const router = express.Router();
 

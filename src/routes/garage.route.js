@@ -1,5 +1,6 @@
 const garageController = require("../controllers/garage.controller")
 const express =require("express")
+const verifyToken = require("../middlewheres/verifyToken");
 
 const router = express.Router();
 

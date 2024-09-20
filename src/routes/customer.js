@@ -1,15 +1,7 @@
-// const customerController = require("../controllers/customerController")
-// const express = require("express")
 
-// const router = express.Router()
-
-// router.get("/", customerController.welcome)
-// router.post("/register", customerController.createCustomer)
-
-
-// module.exports = router
 const express = require("express");
 const customerController = require("../controllers/customerController")
+const verifyToken = require("../middlewheres/verifyToken");
 const router = express.Router();
 
 

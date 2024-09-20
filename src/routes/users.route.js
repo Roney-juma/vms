@@ -10,7 +10,7 @@ router.get('/',verifyToken(),userController.getAllUsers)
 router.post('/create',verifyToken(), userController.createUser)
 router.post('/login', userController.login)
 router.patch('/update/:id',verifyToken(),userController.updateAdminUser)
-router.delete('/:id',verifyToken(), userController.getAdminUser)
+router.get('/:id',verifyToken(), userController.getAdminUser)
 router.patch('/delete/:id',verifyToken(), userController.deleteAdminUser)
 router.post('/reset-password',verifyToken(), userController.resetPassword);
 
