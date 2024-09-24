@@ -34,7 +34,8 @@ const deleteAssessor = async (id) => {
 
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await Assessor.findOne({ email });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  console.log("User", user)
+  if (!user || !(await !(await user.isPasswordMatch(password)))) {
     throw new ApiError(401, 'Invalid email or password');
   }
   return user;
