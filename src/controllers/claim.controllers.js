@@ -73,7 +73,7 @@ const getClaimById = async (req, res) => {
 // Award a claim to an assessor
 const awardClaim = async (req, res) => {
   try {
-    const claim = await claimService.awardClaim(req.params.id, req.params.bidId);
+    const claim = await claimService.awardClaim(req.params.id, req.body.bidId);
     res.status(200).json(claim);
   } catch (error) {
     res.status(500).json({ message: error.message });
