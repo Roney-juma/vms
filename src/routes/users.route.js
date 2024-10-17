@@ -7,7 +7,7 @@ const verifyToken = require("../middlewheres/verifyToken");
 // router.use(verifyToken)
 
 router.get('/',verifyToken(),userController.getAllUsers)
-router.post('/create',verifyToken(), userController.createUser)
+router.post('/create', userController.createUser)
 router.post('/login', userController.login)
 router.patch('/update/:id',verifyToken(),userController.updateAdminUser)
 router.get('/:id',verifyToken(), userController.getAdminUser)
