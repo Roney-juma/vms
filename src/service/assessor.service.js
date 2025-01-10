@@ -34,7 +34,7 @@ const deleteAssessor = async (id) => {
 
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await Assessor.findOne({ email });
-  console.log("User", user)
+
   if (!user || !(await !(await user.isPasswordMatch(password)))) {
     throw new ApiError(401, 'Invalid email or password');
   }
@@ -91,7 +91,7 @@ const getAssessorBids = async (assessorId) => {
 
   const assessorBids = [];
   for (const claim of claims) {
-    const relevantBids = claim.bids.filter((bid) => bid.assessorId.toString() === assessorId);
+    const relevantBids = claim.bids.filter((bid) => bid.assessorId?.toString() === assessorId);
     relevantBids.forEach((bid) => {
       assessorBids.push({
         claimId: claim._id,
@@ -122,7 +122,7 @@ const submitAssessmentReport = async (claimId, assessmentReport) => {
 const resetPassword = async (email, newPassword) => {
   const user = await Assessor.findOne({ email });
   if (!user) {
-      throw new Error('Invalid request');
+    throw new Error('Invalid request');
   }
 
   // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
