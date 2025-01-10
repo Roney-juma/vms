@@ -216,40 +216,46 @@ const awardClaim = async (id, bidId) => {
 const awardBidToGarage = async (id, bidId) => {
   const claim = await Claim.findById(id);
   if (!claim) throw new Error('Claim not found');
+
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
-  
   bid.status = 'awarded';
   claim.awardedGarage = {
     garageId: bid.garageId,
-    awardedAmount: bid.amount,
+    awardedAmount: bid.totalCost,
     awardedDate: Date.now(),
   };
   claim.status = 'Garage';
-  claim.bids.forEach(otherBid => {
+  claim.bids.forEach((otherBid) => {
     if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
       otherBid.status = 'rejected';
     }
   });
-  
+
+  const garage = await Garage.findById(bid.garageId);
+  if (!garage) throw new Error('Garage not found');
+
+  garage.pendingWork = (garage.pendingWork || 0) + 1;
+  await garage.save();
   await Notification.create({
     recipientId: bid.garageId,
     recipientType: 'garage',
-    content: `Your bid for claim ID: ${claim._id} has been awarded.`
+    content: `Your bid for claim ID: ${claim._id} has been awarded.`,
   });
-  
+
+  // Save the updated claim
   await claim.save();
-  
-  const garage = await Garage.findById(bid.garageId);
-  if (garage && garage.email) {
+  if (garage.email) {
     await emailService.sendEmailNotification(
       garage.email,
       'Bid Award Notification',
       `Dear ${garage.name},\n\nCongratulations! Your bid for the claim with ID: ${claim._id} has been awarded. You are requested to proceed with the repair of the vehicle as soon as possible.\n\nPlease ensure that all necessary repairs are completed in a timely and professional manner.\n\nThank you for your cooperation.\n\nBest Regards,\nAdmin Team`
     );
   }
+
   return claim;
 };
+
 
 // Get awarded claims
 const getAwardedClaims = async () => {

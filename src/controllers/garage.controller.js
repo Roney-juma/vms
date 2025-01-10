@@ -77,15 +77,19 @@ const getAssessedClaims = async (req, res) => {
 };
 
 const placeBid = async (req, res) => {
-  const { garageId, amount } = req.body;
+  const { garageId, parts } = req.body;
+
   try {
-    const claim = await garageService.placeBid(req.params.id, garageId, amount);
-    res.status(201).json(claim);
+    
+    const bid = await garageService.placeBid(req.params.id, garageId, parts);
+
+    res.status(201).json(bid);
   } catch (error) {
     console.error('Error placing bid:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const completeRepair = async (req, res) => {
   try {

@@ -4,7 +4,13 @@ const { ObjectId } = require("mongodb")
 
 const garageSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    location: { type: String, required: true },
+    location: {
+      address: String,
+      city: String,
+      state: String,
+      zip: String,
+    },
+    pendingWork: { type: Number, default: 0 },
     email:{ type: String, required: true },
     password: {
       type: String,

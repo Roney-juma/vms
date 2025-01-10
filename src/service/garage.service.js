@@ -81,36 +81,54 @@ const getAssessedClaims = async () => {
   return await Claim.find({ status: 'Assessed', awardedGarage: { $exists: false } });
 };
 
-const placeBid = async (claimId, garageId, amount) => {
+const placeBid = async (claimId, garageId, parts) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
-  if (claim.status !== 'Assessed') throw new Error('Bids can only be placed on Assessed claims');
-  
-  const existingBid = claim.bids.find(bid => bid.garageId && bid.garageId.toString() === garageId);
-  if (existingBid) throw new Error('You have already placed a bid on this claim');
-  
+
+  if (claim.status !== 'Assessed') {
+    throw new Error('Bids can only be placed on Assessed claims');
+  }
+
+  const existingBid = claim.bids.find(
+    (bid) => bid.garageId && bid.garageId.toString() === garageId
+  );
+  if (existingBid) {
+    throw new Error('You have already placed a bid on this claim');
+  }
+  const totalCost = parts.reduce((total, part) => total + part.cost, 0);
   const newBid = {
     bidderType: 'garage',
     garageId,
-    amount,
+    parts,
+    totalCost,
     bidDate: new Date(),
     status: 'pending',
   };
-
   claim.bids.push(newBid);
   await claim.save();
-
   const garage = await Garage.findById(garageId);
+
   if (garage && garage.email) {
     await emailService.sendEmailNotification(
       garage.email,
       'New Bid Placed',
-      `Dear ${garage.name},\n\nYou have successfully placed a bid of ${amount} on claim ID: ${claim._id}.`
+      `Dear ${garage.name},\n\nYou have successfully placed a bid of ${totalCost} on claim ID: ${claim._id}. The following parts are included in your bid:\n\n${parts
+        .map((part) => `${part.partName}: ${part.cost}`)
+        .join('\n')}\n\nThank you for your participation.`
     );
   }
+  const response = {
+    claim,
+    garageDetails: {
+      pendingWork: garage.pendingWork, 
+      ratings: garage.ratings,
+      location: garage.location,
+    },
+  };
 
-  return claim;
+  return response;
 };
+
 
 const completeRepair = async (claimId) => {
   const claim = await Claim.findById(claimId);
