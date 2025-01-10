@@ -21,6 +21,22 @@ const bidSchema = new Schema({
     type: Number, 
     required: false 
   },
+  amount:
+  {
+    type: Number,
+    required: false
+    },
+
+    description:
+    {
+      type: String,
+      required: false
+      },
+    timeline:
+    {
+      type: String,
+      required: false
+      },
   bidDate: { 
     type: Date, 
     default: Date.now 

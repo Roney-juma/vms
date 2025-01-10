@@ -118,9 +118,11 @@ const createClaim = async (data) => {
 };
 
 // Get all claims
+// Get all claims
 const getClaims = async () => {
-  return await Claim.find();
+  return await Claim.find().sort({ createdAt: -1 });
 };
+
 
 // Get claims by customer ID
 const getClaimsByCustomer = async (customerId) => {
