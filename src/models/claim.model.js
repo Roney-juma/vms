@@ -131,7 +131,7 @@ const claimSchema = new Schema({
     awardedDate: { type: Date }
   },
   repairDate:{type: Date},
-  assessmentReport:{},
+  assessmentReport:[],
   supplierBids: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SupplyBid'

@@ -92,7 +92,7 @@ const submitBidForSupply = async (claimId, supplierId, parts) => {
 
 const getClaimsInGarage = async () => {
     return Claim.find({
-        status: 'Garage',
+        status: 'Assessed',
         'supplierBids': {
             $not: { $elemMatch: { status: 'Accepted' } }
         }

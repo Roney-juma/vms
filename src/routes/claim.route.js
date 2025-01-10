@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.post('/create',claimController.createClaim )
 router.get('/',claimController.getClaims )
+router.post('/generate-claim-link', claimController.generateClaimLinkController);
+router.post('/file-claim/:token', claimController.fileClaim);
 router.patch('/approve/:id',claimController.approveClaim)
 router.delete('/delete/:id', claimController.deleteClaim)
 router.patch('/reject/:id', claimController.rejectClaim)

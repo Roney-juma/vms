@@ -5,6 +5,88 @@ const Garage = require('../models/garage.model');
 const SupplyBid = require('../models/supplyBids.model');
 const Notification = require('../models/notification.model');
 const emailService = require('./email.service');
+const ClaimToken = require('../models/claimToken.model');
+const crypto = require('crypto');
+
+const generateClaimLink = async (email) => {
+  try {
+    const customer = await Customer.findOne({ email });
+
+    if (!customer) {
+      return { error: 'Customer not found' };
+    }
+    const token = crypto.randomBytes(20).toString('hex');
+    const customerId = customer._id
+
+  
+    const claimToken = new ClaimToken({
+      customerId,
+      token,
+    });
+
+    await claimToken.save();
+
+    const claimLink = `https://aveafricasolutions.com/file-claim/${token}`;
+      await emailService.sendEmailNotification(
+        email,
+        'File a claim here',
+        `Dear ${customer.firstName},\n\nClick this link to file a claim: ${claimLink}\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+      );
+      return claimLink;
+      } catch (error) {
+        console.error(error);
+        return { error: 'Failed to generate claim link' };
+        }
+};
+
+
+// File the claim for Web
+
+const fileClaimService = async (token, claimDetails) => {
+  try {
+    const claimToken = await ClaimToken.findOne({ token });
+
+    if (!claimToken) {
+      throw new Error('Invalid token');
+    }
+    if (claimToken.used) {
+      throw new Error('This link has already been used');
+    }
+    claimToken.used = true;
+    await claimToken.save();
+    const customer = await Customer.findById(claimToken.customerId);
+
+    if (!customer) {
+      throw new Error('Customer not found');
+    }
+    const newClaim = new Claim({
+      customerId: customer._id,
+      claimant: {
+        name: `${customer.firstName} ${customer.lastName}`,
+        address: customer.address || 'Not Provided',
+        phone: customer.phone,
+        email: customer.email
+      },
+      ...claimDetails,
+    });
+    await newClaim.save();
+    if (claimant.email) {
+      await emailService.sendEmailNotification(
+        claimant.email,
+        'Claim Submission Confirmation',
+        `Dear ${claimant.name},\n\nYour claim has been successfully submitted and is now being processed. Our team will review your claim and get back to you shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+      );
+    }
+
+    return newClaim;
+
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+
+
 
 // Create a new claim
 const createClaim = async (data) => {
@@ -233,6 +315,8 @@ const acceptSupplierBid = async (claimId, bidId) => {
 };
 
 module.exports = {
+  generateClaimLink,
+  fileClaimService,
   createClaim,
   getClaims,
   getClaimsByCustomer,
