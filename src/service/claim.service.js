@@ -249,7 +249,6 @@ const awardBidToGarage = async (id, bidId) => {
     content: `Your bid for claim ID: ${claim._id} has been awarded.`,
   });
 
-  // Save the updated claim
   await claim.save();
   if (garage.email) {
     await emailService.sendEmailNotification(
@@ -261,6 +260,7 @@ const awardBidToGarage = async (id, bidId) => {
 
   return claim;
 };
+
 
 
 // Get awarded claims
