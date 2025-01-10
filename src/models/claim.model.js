@@ -17,9 +17,9 @@ const bidSchema = new Schema({
     ref: 'Garage', 
     required: function() { return this.bidderType === 'garage'; } 
   },
-  amount: { 
+  parts: { 
     type: Number, 
-    required: true 
+    required: false 
   },
   bidDate: { 
     type: Date, 

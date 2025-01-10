@@ -77,23 +77,21 @@ const getApprovedClaims = async (req, res) => {
 };
 
 const placeBid = async (req, res) => {
+  const { claimId } = req.params;
+  const { assessorId, amount, description, timeline } = req.body;
+
   try {
-    const { assessorId, amount } = req.body;
-    const claim = await assessorService.placeBid(req.params.id, assessorId, amount);
-
-    // Notify the assessor
-    const assessor = await assessorService.getAssessorById(assessorId);
-    await emailService.sendEmailNotification(
-      assessor.email,
-      'New Bid Placed',
-      `You have successfully placed a bid of ${amount} on claim ID: ${claim._id}.`
-    );
-
-    res.status(201).json(claim);
+    const bid = await assessorService.placeBid(claimId, assessorId, amount, description, timeline);
+    res.status(201).json({
+      message: 'Bid placed successfully',
+      bid,
+    });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+    console.error('Error placing bid:', error.message);
+    res.status(500).json({ error: error.message });
   }
 };
+
 
 const getAssessorBids = async (req, res) => {
   try {

@@ -45,28 +45,46 @@ const getApprovedClaims = async () => {
   return await Claim.find({ status: 'Approved', awardedAssessor: { $exists: false } });
 };
 
-const placeBid = async (claimId, assessorId, amount) => {
+const placeBid = async (claimId, assessorId, amount, description, timeline) => {
+
   const claim = await Claim.findById(claimId);
   if (!claim) throw new ApiError(404, 'Claim not found');
 
   if (claim.status !== 'Approved') throw new ApiError(400, 'Bids can only be placed on approved claims');
 
-  const existingBid = claim.bids.find((bid) => bid.assessorId.toString() === assessorId);
+  const existingBid = claim.bids.find((bid) => bid.assessorId?.toString() === assessorId);
   if (existingBid) throw new ApiError(400, 'You have already placed a bid on this claim');
 
   const newBid = {
     bidderType: 'assessor',
     assessorId,
     amount,
+    description,
+    timeline,
     bidDate: new Date(),
     status: 'pending',
   };
-
   claim.bids.push(newBid);
   await claim.save();
-
-  return claim;
+  const assessor = await Assessor.findById(assessorId);
+  if (!assessor) throw new ApiError(404, 'Assessor not found');
+  const pendingWork = await Claim.countDocuments({
+    'awardedAssessor.assessorId': assessorId,
+    status: { $ne: 'Completed' },
+  });
+  return {
+    amount,
+    description,
+    timeline,
+    assessorDetails: {
+      name: assessor.name,
+      ratings: assessor.ratings,
+      location: assessor.location,
+    },
+    pendingWork,
+  };
 };
+
 
 const getAssessorBids = async (assessorId) => {
   const claims = await Claim.find({ "bids.assessorId": assessorId });
