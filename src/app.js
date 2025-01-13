@@ -23,7 +23,6 @@ app.get("/v1", (req, res) => {
 // Create an HTTP server with the Express app
 const server = http.createServer(app);
 
-// Initialize Socket.IO with the HTTP server
 const io = socketIo(server, {
   cors: {
     origin: "*", // Allow all origins
