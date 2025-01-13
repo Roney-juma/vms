@@ -70,7 +70,7 @@ const fileClaimService = async (token, claimDetails) => {
       ...claimDetails,
     });
     await newClaim.save();
-    if (claimant.email) {
+    if (newClaim.claimant.email) {
       await emailService.sendEmailNotification(
         claimant.email,
         'Claim Submission Confirmation',
