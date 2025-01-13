@@ -26,7 +26,7 @@ const generateClaimLink = async (email) => {
 
     await claimToken.save();
 
-    const claimLink = `https://aveafricasolutions.com/file-claim/${token}`;
+    const claimLink = `http://admin.aveafricasolutions.com/file-claim/${token}`;
       await emailService.sendEmailNotification(
         email,
         'File a claim here',
