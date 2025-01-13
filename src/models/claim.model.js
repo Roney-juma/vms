@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
+const partSchema = new Schema({
+  partName: { type: String, required: false },
+  cost: { type: Number, required: false },
+});
+
 const bidSchema = new Schema({
   bidderType: {
     type: String,
@@ -22,7 +27,7 @@ const bidSchema = new Schema({
     required: function () { return this.bidderType === 'garage'; }
   },
   parts: {
-    type: [Object],
+    type: [partSchema],
     required: false
   },
   garageDetails:
