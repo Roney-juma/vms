@@ -16,9 +16,9 @@ const generateClaimLink = async (email) => {
       return { error: 'Customer not found' };
     }
     const token = crypto.randomBytes(20).toString('hex');
-    const customerId = customer._id
+    const customerId = customer._id;
 
-  
+
     const claimToken = new ClaimToken({
       customerId,
       token,
@@ -26,17 +26,17 @@ const generateClaimLink = async (email) => {
 
     await claimToken.save();
 
-    const claimLink = `https://aveafricasolutions.com/file-claim/${token}`;
-      await emailService.sendEmailNotification(
-        email,
-        'File a claim here',
-        `Dear ${customer.firstName},\n\nClick this link to file a claim: ${claimLink}\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
-      );
-      return claimLink;
-      } catch (error) {
-        console.error(error);
-        return { error: 'Failed to generate claim link' };
-        }
+    const claimLink = `https://admin.aveafricasolutions.com/file-claim/${token}`;
+    await emailService.sendEmailNotification(
+      email,
+      'File a claim here',
+      `Dear ${customer.firstName},\n\nClick this link to file a claim: ${claimLink}\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+    );
+    return claimLink;
+  } catch (error) {
+    console.error(error);
+    return { error: 'Failed to generate claim link' };
+  }
 };
 
 
