@@ -19,7 +19,7 @@ app.post('/deploy', (req, res) => {
     // }
 
     // Execute deployment script
-    exec('./deploy.sh', (error, stdout, stderr) => {
+    exec('/deploy.sh', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error: ${error.message}`);
             return res.status(500).send('Deployment failed');
