@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const Claim = require('../models/claim.model');
 const ApiError = require('../utils/ApiError');
 
+
 const createAssessor = async (assessorData) => {
   const existingUser = await Assessor.findOne({ email: assessorData.email });
   if (existingUser) throw new ApiError(409, 'Assessor already exists');
@@ -55,8 +56,11 @@ const placeBid = async (claimId, assessorId, amount, description, timeline) => {
   const existingBid = claim.bids.find((bid) => bid.assessorId?.toString() === assessorId);
   if (existingBid) throw new ApiError(400, 'You have already placed a bid on this claim');
 
+  const assessor = await Assessor.findById(assessorId);
+
   const newBid = {
     bidderType: 'assessor',
+    ratings: assessor.ratings.averageRating,
     assessorId,
     amount,
     description,
@@ -65,8 +69,9 @@ const placeBid = async (claimId, assessorId, amount, description, timeline) => {
     status: 'pending',
   };
   claim.bids.push(newBid);
+
   await claim.save();
-  const assessor = await Assessor.findById(assessorId);
+
   if (!assessor) throw new ApiError(404, 'Assessor not found');
   const pendingWork = await Claim.countDocuments({
     'awardedAssessor.assessorId': assessorId,

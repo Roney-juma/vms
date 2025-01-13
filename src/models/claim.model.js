@@ -7,39 +7,42 @@ const bidSchema = new Schema({
     type: String,
     enum: ['assessor', 'garage'],
   },
-  assessorId: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'Assessor', 
-    required: function() { return this.bidderType === 'assessor'; } 
+  ratings: {
+    type: Number,
+    required: false
   },
-  garageId: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'Garage', 
-    required: function() { return this.bidderType === 'garage'; } 
+  assessorId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Assessor',
+    required: function () { return this.bidderType === 'assessor'; }
   },
-  parts: { 
-    type: Number, 
-    required: false 
+  garageId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Garage',
+    required: function () { return this.bidderType === 'garage'; }
+  },
+  parts: {
+    type: Number,
+    required: false
   },
   amount:
   {
     type: Number,
     required: false
-    },
-
-    description:
-    {
-      type: String,
-      required: false
-      },
-    timeline:
-    {
-      type: String,
-      required: false
-      },
-  bidDate: { 
-    type: Date, 
-    default: Date.now 
+  },
+  description:
+  {
+    type: String,
+    required: false
+  },
+  timeline:
+  {
+    type: String,
+    required: false
+  },
+  bidDate: {
+    type: Date,
+    default: Date.now
   },
   status: {
     type: String,
@@ -51,11 +54,11 @@ const bidSchema = new Schema({
 const claimSchema = new Schema({
   customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
   claimant: {
-    name: { type: String},
-    address: { type: String},
-    phone: { type: String},
-    email:{ type: String}
-},
+    name: { type: String },
+    address: { type: String },
+    phone: { type: String },
+    email: { type: String }
+  },
   incidentDetails: {
     date: { type: Date, required: true },
     time: { type: String, required: true },
@@ -91,12 +94,12 @@ const claimSchema = new Schema({
     otherVehicles: { type: String },
     property: { type: String },
   },
-  description:{
-     type: String
-   },
-   damagedParts:{
-     type: String
-   },
+  description: {
+    type: String
+  },
+  damagedParts: {
+    type: String
+  },
   injuries: [{
     person: { type: String, required: true },
     description: { type: String, required: true },
@@ -126,10 +129,10 @@ const claimSchema = new Schema({
     },
     receipts: [String],
   },
-  status: { 
-    type: String, 
-    enum: ['Pending', 'Approved','Rejected', 'Assessment','Assessed' ,'Awarded', 'Repair', 'Garage','Completed'], 
-    default: 'Pending' 
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected', 'Assessment', 'Assessed', 'Awarded', 'Repair', 'Garage', 'Completed'],
+    default: 'Pending'
   },
   repairs: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -146,13 +149,13 @@ const claimSchema = new Schema({
     awardedAmount: { type: Number },
     awardedDate: { type: Date }
   },
-  repairDate:{type: Date},
-  assessmentReport:[],
+  repairDate: { type: Date },
+  assessmentReport: [],
   supplierBids: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SupplyBid'
   }]
 }, { timestamps: true });
 
-const Claim= mongoose.model('Claim', claimSchema);
+const Claim = mongoose.model('Claim', claimSchema);
 module.exports = Claim;
