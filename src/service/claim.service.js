@@ -16,9 +16,9 @@ const generateClaimLink = async (email) => {
       return { error: 'Customer not found' };
     }
     const token = crypto.randomBytes(20).toString('hex');
-    const customerId = customer._id
+    const customerId = customer._id;
 
-  
+
     const claimToken = new ClaimToken({
       customerId,
       token,
