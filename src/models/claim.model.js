@@ -22,9 +22,24 @@ const bidSchema = new Schema({
     required: function () { return this.bidderType === 'garage'; }
   },
   parts: {
-    type: Number,
+    type: [Object],
     required: false
   },
+  garageDetails:
+  {
+    type: Object,
+    required: false
+    },
+  assessorDetails:
+    {
+      type: Object,
+      required: false
+      },
+      pendingWork:
+      {
+        type: Object,
+        required: false
+        },
   amount:
   {
     type: Number,

@@ -101,6 +101,11 @@ const placeBid = async (claimId, garageId, parts) => {
   const newBid = {
     bidderType: 'garage',
     ratings: garage.ratings.averageRating,
+    garageDetails: {
+      pendingWork: garage.pendingWork,
+      ratings: garage.ratings,
+      location: garage.location,
+    },
     garageId,
     parts,
     totalCost,
