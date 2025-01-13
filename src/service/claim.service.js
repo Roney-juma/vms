@@ -27,16 +27,16 @@ const generateClaimLink = async (email) => {
     await claimToken.save();
 
     const claimLink = `http://admin.aveafricasolutions.com/file-claim/${token}`;
-      await emailService.sendEmailNotification(
-        email,
-        'File a claim here',
-        `Dear ${customer.firstName},\n\nClick this link to file a claim: ${claimLink}\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
-      );
-      return claimLink;
-      } catch (error) {
-        console.error(error);
-        return { error: 'Failed to generate claim link' };
-        }
+    await emailService.sendEmailNotification(
+      email,
+      'File a claim here',
+      `Dear ${customer.firstName},\n\nClick this link to file a claim: ${claimLink}\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+    );
+    return claimLink;
+  } catch (error) {
+    console.error(error);
+    return { error: 'Failed to generate claim link' };
+  }
 };
 
 
@@ -72,9 +72,9 @@ const fileClaimService = async (token, claimDetails) => {
     await newClaim.save();
     if (newClaim.claimant.email) {
       await emailService.sendEmailNotification(
-        claimant.email,
+        newClaim.claimant.email,
         'Claim Submission Confirmation',
-        `Dear ${claimant.name},\n\nYour claim has been successfully submitted and is now being processed. Our team will review your claim and get back to you shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+        `Dear ${newClaim.claimant.name},\n\nYour claim has been successfully submitted and is now being processed. Our team will review your claim and get back to you shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
       );
     }
 

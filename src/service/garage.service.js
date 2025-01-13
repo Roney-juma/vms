@@ -96,8 +96,11 @@ const placeBid = async (claimId, garageId, parts) => {
     throw new Error('You have already placed a bid on this claim');
   }
   const totalCost = parts.reduce((total, part) => total + part.cost, 0);
+  const garage = await Garage.findById(garageId);
+
   const newBid = {
     bidderType: 'garage',
+    ratings: garage.ratings.averageRating,
     garageId,
     parts,
     totalCost,
@@ -106,7 +109,6 @@ const placeBid = async (claimId, garageId, parts) => {
   };
   claim.bids.push(newBid);
   await claim.save();
-  const garage = await Garage.findById(garageId);
 
   if (garage && garage.email) {
     await emailService.sendEmailNotification(
@@ -120,7 +122,7 @@ const placeBid = async (claimId, garageId, parts) => {
   const response = {
     claim,
     garageDetails: {
-      pendingWork: garage.pendingWork, 
+      pendingWork: garage.pendingWork,
       ratings: garage.ratings,
       location: garage.location,
     },
@@ -134,11 +136,11 @@ const completeRepair = async (claimId) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
   if (claim.status !== 'Repair') throw new Error('Claim must be in Repair to mark it as Completed');
-  
+
   claim.status = 'Completed';
   claim.repairDate = new Date();
   await claim.save();
-  
+
   if (claim.claimant && claim.claimant.email) {
     await emailService.sendEmailNotification(
       claim.claimant.email,
@@ -153,7 +155,7 @@ Best Regards,
 Admin Team`
     );
   }
-  
+
   if (claim.awardedAssessor && claim.awardedAssessor.assessorId) {
     const assessor = await Assessor.findById(claim.awardedAssessor.assessorId);
     if (assessor && assessor.email) {
@@ -204,7 +206,7 @@ const getGarageBids = async (garageId) => {
 const resetPassword = async (email, newPassword) => {
   const user = await Garage.findOne({ email });
   if (!user) {
-      throw new Error('User Does not Exist');
+    throw new Error('User Does not Exist');
   }
 
   // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
