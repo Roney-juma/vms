@@ -10,7 +10,7 @@ router.post('/login',supplierController.login)
 router.post('/reset-password', supplierController.resetPassword);
 router.get('/',supplierController.getAllSuppliers)
 router.get('/claimsInGarage',supplierController.getAllClaimsInGarage)
-router.post('partsDelivered/:claimId',supplierController.repairPartsDelivered)
+router.post('/partsDelivered/:claimId',supplierController.repairPartsDelivered)
 router.delete('/delete/:id', supplierController.deleteSupplier)
 router.get('/:id', supplierController.getSupplierById)
 router.post('/supplyBid/:claimId',supplierController.submitBidForSupply)

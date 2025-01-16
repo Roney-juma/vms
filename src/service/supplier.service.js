@@ -71,7 +71,7 @@ const submitBidForSupply = async (claimId, supplierId, parts) => {
       return { error: 'You have already submitted a bid for this claim' };
   }
 
-  const totalCost = parts.reduce((acc, part) => acc + part.partCost, 0);
+  const totalCost = parts.reduce((acc, part) => acc + part.cost, 0);
 
   const supplyBid = new SupplyBid({
       claimId,
@@ -101,19 +101,30 @@ const getClaimsInGarage = async () => {
 
 const repairPartsDelivered = async (claimId) => {
     const claim = await Claim.findById(claimId);
-    const bid = claim.supplierBid.find(bid => bid.bidderType === 'supplier' && bid.status === 'Accepted');
+    if (!claim) {
+        throw new Error('Claim not found');
+    }
 
-    if (!bid) {
+    const acceptedBidId = claim.supplierBids.find(async (bidId) => {
+        const bid = await SupplyBid.findById(bidId);
+        return bid && bid.status === 'Accepted';
+    });
+
+    if (!acceptedBidId) {
         throw new Error('No accepted supplier bid found');
     }
 
-    bid.status = 'Delivered';
+    const acceptedBid = await SupplyBid.findById(acceptedBidId);
+    acceptedBid.status = 'Delivered';
+    await acceptedBid.save();
+
     claim.status = 'Repair';
     claim.repairDate = new Date();
     await claim.save();
-    
+
     return claim;
 };
+
 const resetPassword = async (email, newPassword) => {
   const user = await getUserByEmail(email);
   if (!user) {

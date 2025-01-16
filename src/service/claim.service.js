@@ -181,6 +181,8 @@ const awardClaim = async (id, bidId) => {
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
 
   bid.status = 'awarded';
+  // Mark claim status as Assessment
+  claim.status = 'Assessment';
   claim.awardedAssessor = {
     assessorId: bid.assessorId,
     awardedAmount: bid.amount,

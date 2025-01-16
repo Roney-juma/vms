@@ -2,6 +2,7 @@ const Assessor = require('../models/assessor.model');
 const bcrypt = require('bcrypt');
 const Claim = require('../models/claim.model');
 const ApiError = require('../utils/ApiError');
+const emailService = require("../service/email.service");
 
 
 const createAssessor = async (assessorData) => {
@@ -57,6 +58,11 @@ const placeBid = async (claimId, assessorId, amount, description, timeline) => {
   if (existingBid) throw new ApiError(400, 'You have already placed a bid on this claim');
 
   const assessor = await Assessor.findById(assessorId);
+  if (!assessor) throw new ApiError(404, 'Assessor not found');
+  const pendingWork = await Claim.countDocuments({
+    'awardedAssessor.assessorId': assessorId,
+    status: { $ne: 'Completed' },
+  });
 
   const newBid = {
     bidderType: 'assessor',
@@ -65,18 +71,17 @@ const placeBid = async (claimId, assessorId, amount, description, timeline) => {
     amount,
     description,
     timeline,
+    assessorDetails: {
+      pendingWork,
+      ratings: assessor.ratings,
+      location: assessor.location,
+    },
     bidDate: new Date(),
     status: 'pending',
   };
   claim.bids.push(newBid);
 
   await claim.save();
-
-  if (!assessor) throw new ApiError(404, 'Assessor not found');
-  const pendingWork = await Claim.countDocuments({
-    'awardedAssessor.assessorId': assessorId,
-    status: { $ne: 'Completed' },
-  });
   return {
     amount,
     description,
@@ -116,6 +121,11 @@ const getAssessorBids = async (assessorId) => {
 const submitAssessmentReport = async (claimId, assessmentReport) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new ApiError(404, 'Claim not found');
+    const parts = assessmentReport.parts.map((part) => {
+      return { partName: part, cost: '' }
+      })
+      assessmentReport.parts = parts
+
 
   claim.assessmentReport = assessmentReport;
   claim.status = 'Assessed';
@@ -150,7 +160,7 @@ const resetPassword = async (email, newPassword) => {
 const completeRepair = async (claimId) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
-  if (claim.status !== 'Repair') throw new Error('Claim must be in Repair to mark it as Completed');
+  if (claim.status !== 'Re-Assessment') throw new Error('Claim must be in Repair to mark it as Completed');
 
   claim.status = 'Completed';
   claim.repairDate = new Date();
