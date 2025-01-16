@@ -113,7 +113,7 @@ const createClaim = async (data) => {
     }
     return claim;
   } catch (error) {
-    throw new Error('Server error');
+    return error.message;
   }
 };
 
