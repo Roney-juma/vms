@@ -93,7 +93,7 @@ const placeBid = async (req, res) => {
 
 const completeRepair = async (req, res) => {
   try {
-    const claim = await garageService.completeRepair(req.params.id);
+    const claim = await garageService.callForReAssessment(req.params.id);
     res.status(200).json(claim);
   } catch (error) {
     console.error('Error completing repair:', error.message);

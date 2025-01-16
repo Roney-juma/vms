@@ -119,6 +119,15 @@ const resetPassword = async (req, res) => {
       res.status(400).json({ error: err.message });
   }
 };
+const completeReAssessment = async (req, res) => {
+  try {
+    const claim = await assessorService.completeRepair(req.params.id);
+    res.status(200).json(claim);
+  } catch (error) {
+    console.error('Error completing repair:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   login,
@@ -131,5 +140,6 @@ module.exports = {
   placeBid,
   getAssessorBids,
   submitAssessmentReport,
-  resetPassword
+  resetPassword,
+  completeReAssessment
 };

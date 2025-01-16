@@ -147,6 +147,33 @@ const resetPassword = async (email, newPassword) => {
   return { message: 'Password has been reset successfully' };
 };
 
+const completeRepair = async (claimId) => {
+  const claim = await Claim.findById(claimId);
+  if (!claim) throw new Error('Claim not found');
+  if (claim.status !== 'Repair') throw new Error('Claim must be in Repair to mark it as Completed');
+
+  claim.status = 'Completed';
+  claim.repairDate = new Date();
+  await claim.save();
+
+  if (claim.claimant && claim.claimant.email) {
+    await emailService.sendEmailNotification(
+      claim.claimant.email,
+      'Repair Completed - Verification Pending',
+      `Dear ${claim.claimant.name},
+
+We are pleased to inform you that the repair for your claim with ID: ${claim._id} has been completed.
+Please verify that the vehicle has been fully repaired.
+If you are satisfied with the repair, please reply to this email to confirm.
+Thank you for your patience during this process.
+
+Best Regards,
+Admin Team`
+    );
+  }
+  return claim;
+};
+
 module.exports = {
   createAssessor,
   getAssessors,
@@ -158,5 +185,6 @@ module.exports = {
   placeBid,
   getAssessorBids,
   submitAssessmentReport,
-  resetPassword
+  resetPassword,
+  completeRepair
 };

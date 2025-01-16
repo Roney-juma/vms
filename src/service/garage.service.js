@@ -136,31 +136,15 @@ const placeBid = async (claimId, garageId, parts) => {
   return response;
 };
 
-
-const completeRepair = async (claimId) => {
+// Call for Re-Assessment
+const callForReAssessment = async (claimId) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
-  if (claim.status !== 'Repair') throw new Error('Claim must be in Repair to mark it as Completed');
+  if (claim.status !== 'Repair') throw new Error('Claim must be in Repair to call for re-assessment');
 
-  claim.status = 'Completed';
+  claim.status = 'Re-Assessment';
   claim.repairDate = new Date();
   await claim.save();
-
-  if (claim.claimant && claim.claimant.email) {
-    await emailService.sendEmailNotification(
-      claim.claimant.email,
-      'Repair Completed - Verification Pending',
-      `Dear ${claim.claimant.name},
-
-We are pleased to inform you that the repair for your claim with ID: ${claim._id} has been completed. An assessor will be reaching out to verify the repair details.
-
-Thank you for your patience during this process.
-
-Best Regards,
-Admin Team`
-    );
-  }
-
   if (claim.awardedAssessor && claim.awardedAssessor.assessorId) {
     const assessor = await Assessor.findById(claim.awardedAssessor.assessorId);
     if (assessor && assessor.email) {
@@ -241,7 +225,7 @@ module.exports = {
   deleteGarage,
   getAssessedClaims,
   placeBid,
-  completeRepair,
+  callForReAssessment,
   getGarageBids,
   resetPassword
 };
