@@ -22,7 +22,7 @@ const assessorSchema = new Schema({
   experience: { type: Number, },
   specialties: [String], 
   ratings: {
-    averageRating: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 5 },
     totalRatings: { type: Number, default: 0 },
     reviews: [{
       customerId: { type: ObjectId, ref: 'Customer'},

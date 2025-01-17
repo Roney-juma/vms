@@ -24,7 +24,7 @@ const garageSchema = new mongoose.Schema({
     email: { type: String, required: true },
     services: [{ type: String }],
     ratings: {
-      averageRating: { type: Number, default: 0 },
+      averageRating: { type: Number, default: 5 },
       totalRatings: { type: Number, default: 0 },
       reviews: [{
         customerId: { type: ObjectId, ref: 'Customer'},
