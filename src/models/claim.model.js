@@ -169,6 +169,10 @@ const claimSchema = new Schema({
     awardedAmount: { type: Number },
     awardedDate: { type: Date }
   },
+  rejectionReason:
+  {
+    type: String
+    },
   repairDate: { type: Date },
   assessmentReport: [],
   supplierBids: [{

@@ -128,6 +128,16 @@ const completeReAssessment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const rejectReAssessment = async (req, res) => {
+  try {
+    const rejectionReason = req.body.rejectionReason
+    const claim = await assessorService.rejectRepair(req.params.id,rejectionReason);
+    res.status(200).json(claim);
+  } catch (error) {
+    console.error('Error completing repair:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   login,
@@ -141,5 +151,6 @@ module.exports = {
   getAssessorBids,
   submitAssessmentReport,
   resetPassword,
-  completeReAssessment
+  completeReAssessment,
+  rejectReAssessment
 };

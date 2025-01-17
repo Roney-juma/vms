@@ -160,7 +160,7 @@ const resetPassword = async (email, newPassword) => {
 const completeRepair = async (claimId) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
-  if (claim.status !== 'Re-Assessment') throw new Error('Claim must be in Repair to mark it as Completed');
+  if (claim.status !== 'Re-Assessment') throw new Error('Claim must be under Re-Assessment to mark it as Completed');
 
   claim.status = 'Completed';
   claim.repairDate = new Date();
@@ -183,6 +183,20 @@ Admin Team`
   }
   return claim;
 };
+const rejectRepair = async (claimId,rejectionReason) => {
+  const claim = await Claim.findById(claimId);
+  if (!claim) throw new Error('Claim not found');
+  if (claim.status !== 'Re-Assessment') throw new Error('Claim must be under Re-Assessment to mark it as Rejected');
+  claim.status = 'Repair';
+  claim.rejectionReason = rejectionReason;
+  await claim.save();
+      return claim;
+      };
+
+
+
+
+
 
 module.exports = {
   createAssessor,
@@ -196,5 +210,6 @@ module.exports = {
   getAssessorBids,
   submitAssessmentReport,
   resetPassword,
-  completeRepair
+  completeRepair,
+  rejectRepair
 };
