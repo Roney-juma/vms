@@ -78,7 +78,7 @@ const deleteGarage = async (garageId) => {
 };
 
 const getAssessedClaims = async () => {
-  return await Claim.find({ status: 'Assessed', awardedGarage: { $exists: false } });
+  return await Claim.find({ status: 'Garage', awardedGarage: { $exists: false } });
 };
 
 const placeBid = async (claimId, garageId, parts) => {
