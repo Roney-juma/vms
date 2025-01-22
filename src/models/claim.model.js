@@ -174,7 +174,10 @@ const claimSchema = new Schema({
     type: String
     },
   repairDate: { type: Date },
-  assessmentReport: [],
+  assessmentReport: {
+    type: Object
+
+  },
   supplierBids: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SupplyBid'

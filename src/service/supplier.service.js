@@ -39,6 +39,10 @@ const createSupplier = async (supplierData) => {
   const password = await bcrypt.hash(newSupplier.password, 10);
   newSupplier.password = password;
 
+//   Send Email notification
+
+
+
   return newSupplier.save();
 };
 
@@ -116,9 +120,10 @@ const repairPartsDelivered = async (claimId) => {
 
     const acceptedBid = await SupplyBid.findById(acceptedBidId);
     acceptedBid.status = 'Delivered';
+    claim.assessmentReport.parts = bid.parts
     await acceptedBid.save();
 
-    claim.status = 'Repair';
+    claim.status = 'Garage';
     claim.repairDate = new Date();
     await claim.save();
 
