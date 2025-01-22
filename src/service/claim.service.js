@@ -233,7 +233,7 @@ const awardBidToGarage = async (id, bidId) => {
     awardedAmount: bid.totalCost,
     awardedDate: Date.now(),
   };
-  claim.status = 'Garage';
+  claim.status = 'Repair';
   claim.bids.forEach((otherBid) => {
     if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
       otherBid.status = 'rejected';
