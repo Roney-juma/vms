@@ -167,15 +167,23 @@ Admin Team`
 };
 
 const getGarageBids = async (garageId) => {
-  const claims = await Claim.find({ 'bids.bidderType': 'garage' });
+  const claims = await Claim.find({
+    $or: [
+      { 'bids.bidderType': 'garage', 'bids.garageId': garageId },
+      { 'awardedGarage.garageId': garageId },
+    ],
+  });
+
   const garageBids = [];
 
-  claims.forEach(claim => {
-    const filteredBids = claim.bids.filter(bid =>
-      bid.bidderType === 'garage' && bid.garageId.toString() === garageId
+  claims.forEach((claim) => {
+    // Filter bids where the garageId matches
+    const filteredBids = claim.bids.filter(
+      (bid) =>
+        bid.bidderType === 'garage' && bid.garageId.toString() === garageId
     );
 
-    filteredBids.forEach(bid => {
+    filteredBids.forEach((bid) => {
       garageBids.push({
         claimId: claim._id,
         bidId: bid._id,
@@ -183,15 +191,32 @@ const getGarageBids = async (garageId) => {
         status: bid.status,
         bidDate: bid.bidDate,
         claimStatus: claim.status,
-        vehicleType: claim.vehiclesInvolved[0]
+        vehicleType: claim.vehiclesInvolved?.[0] || 'Unknown',
       });
     });
+
+    // Add claims where the garageId matches awardedGarage
+    if (
+      claim.awardedGarage &&
+      claim.awardedGarage.garageId.toString() === garageId
+    ) {
+      garageBids.push({
+        claimId: claim._id,
+        bidId: null, // No specific bid for awardedGarage
+        amount: claim.awardedGarage.awardedAmount,
+        status: 'awarded',
+        bidDate: claim.awardedGarage.awardedDate,
+        claimStatus: claim.status,
+        vehicleType: claim.vehiclesInvolved?.[0] || 'Unknown',
+      });
+    }
   });
 
   if (garageBids.length === 0) throw new Error('No bids found for this Garage');
 
   return garageBids;
 };
+
 const resetPassword = async (email, newPassword) => {
   const user = await Garage.findOne({ email });
   if (!user) {
