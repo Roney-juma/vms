@@ -85,8 +85,8 @@ const placeBid = async (claimId, garageId, parts) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
 
-  if (claim.status !== 'Assessed') {
-    throw new Error('Bids can only be placed on Assessed claims');
+  if (claim.status !== 'Garage') {
+    throw new Error('Bids can only be placed on Garage claims');
   }
 
   const existingBid = claim.bids.find(
