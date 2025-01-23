@@ -222,7 +222,7 @@ const awardClaim = async (id, bidId) => {
 
 
 const awardBidToGarage = async (id, bidId) => {
-  const claim = await Claim.findById(id).populate('customerId'); // Assuming claim has a reference to customer
+  const claim = await Claim.findById(id)
   if (!claim) throw new Error('Claim not found');
 
   const bid = claim.bids.id(bidId);
