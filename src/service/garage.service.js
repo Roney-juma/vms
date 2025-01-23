@@ -61,8 +61,37 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   return user;
 };
 
-const getAllGarages = async () => {
-  return await Garage.find();
+const getAllGarages = async (filter = {}, page = 1, limit = 10) => {
+  try {
+    const query = {};
+
+    if (filter.city) {
+      query.location.city = filter.city;
+    }
+
+    if (filter.estate) {
+      query.location.estate = filter.estate;
+    }
+
+    if (filter.state) {
+      query.location.state = filter.state;
+    }
+
+    const totalGarages = await Garage.countDocuments(query);
+
+    const garages = await Garage.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return {
+      garages,
+      totalGarages,
+      currentPage: page,
+      totalPages: Math.ceil(totalGarages / limit),
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getGarage = async (garageId) => {

@@ -30,7 +30,22 @@ const login = async (req, res) => {
 
 const getAllGarages = async (req, res) => {
   try {
-    const garages = await garageService.getAllGarages();
+    const { page = 1, limit = 10, city, estate, state } = req.query; 
+    const filter = {};
+
+    if (city) {
+      filter.city = city;
+    }
+
+    if (estate) {
+      filter.estate = estate;
+    }
+
+    if (state) {
+      filter.state = state;
+    }
+
+    const garages = await garageService.getAllGarages(filter, page, limit);
     res.status(200).json(garages);
   } catch (error) {
     res.status(500).json({ message: error.message });
