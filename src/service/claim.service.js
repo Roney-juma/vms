@@ -220,20 +220,22 @@ const awardClaim = async (id, bidId) => {
   return claim;
 };
 
-// Award Bid to Garage
+
 const awardBidToGarage = async (id, bidId) => {
-  const claim = await Claim.findById(id);
+  const claim = await Claim.findById(id).populate('customerId'); // Assuming claim has a reference to customer
   if (!claim) throw new Error('Claim not found');
 
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
   bid.status = 'awarded';
+
   claim.awardedGarage = {
     garageId: bid.garageId,
     awardedAmount: bid.totalCost,
     awardedDate: Date.now(),
   };
   claim.status = 'Repair';
+
   claim.bids.forEach((otherBid) => {
     if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'garage') {
       otherBid.status = 'rejected';
@@ -245,6 +247,7 @@ const awardBidToGarage = async (id, bidId) => {
 
   garage.pendingWork = (garage.pendingWork || 0) + 1;
   await garage.save();
+
   await Notification.create({
     recipientId: bid.garageId,
     recipientType: 'garage',
@@ -252,6 +255,8 @@ const awardBidToGarage = async (id, bidId) => {
   });
 
   await claim.save();
+
+  // Email to Garage
   if (garage.email) {
     await emailService.sendEmailNotification(
       garage.email,
@@ -260,8 +265,19 @@ const awardBidToGarage = async (id, bidId) => {
     );
   }
 
+  // Email to Customer
+   // Assuming claim has `customerId` populated
+  if (claim.claimant?.email) {
+    await emailService.sendEmailNotification(
+      claim.claimant?.email,
+      'Repair Details for Your Vehicle',
+      `Dear ${claim.claimant?.name},\n\nWe are pleased to inform you that your claim for (ID: ${claim.vehiclesInvolved[0].licensePlate}) has been processed, and your vehicle will be repaired at the following garage:\n\nGarage Details:\n- Name: ${garage.name}\n- Location: ${garage.location.address}, ${garage.location.city}\n- Ratings: ${garage.ratings.averageRating || 'No ratings available'}\n- Description: ${garage.description || 'No description available'}\n\nThe garage will contact you shortly to proceed with the repairs. If you have any questions, please feel free to reach out.\n\nThank you for choosing our services.\n\nBest Regards,\nAdmin Team`
+    );
+  }
+
   return claim;
 };
+
 
 
 

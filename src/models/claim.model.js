@@ -100,7 +100,7 @@ const claimSchema = new Schema({
     make: { type: String, required: true },
     model: { type: String, required: true },
     year: { type: Number, required: true },
-    VIN: { type: String, required: true },
+    VIN: { type: String, required: false },
     licensePlate: { type: String, required: true },
   }],
   drivers: [{
