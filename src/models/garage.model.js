@@ -5,7 +5,7 @@ const { ObjectId } = require("mongodb")
 const garageSchema = new mongoose.Schema({
     name: { type: String, required: true },
     location: {
-      address: String,
+      estate: String,
       city: String,
       state: String,
       zip: String,
