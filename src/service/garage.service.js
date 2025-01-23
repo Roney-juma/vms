@@ -81,7 +81,7 @@ const getAssessedClaims = async () => {
   return await Claim.find({ status: 'Garage', awardedGarage: { $exists: false } });
 };
 
-const placeBid = async (claimId, garageId, parts) => {
+const placeBid = async (claimId, garageId,description, timeline, parts) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
 
@@ -108,6 +108,8 @@ const placeBid = async (claimId, garageId, parts) => {
     },
     garageId,
     parts,
+    timeline,
+    description,
     totalCost,
     bidDate: new Date(),
     status: 'pending',
