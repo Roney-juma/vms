@@ -92,11 +92,11 @@ const getAssessedClaims = async (req, res) => {
 };
 
 const placeBid = async (req, res) => {
-  const { garageId, parts } = req.body;
+  const { garageId, description, timeline, parts } = req.body;
 
   try {
     
-    const bid = await garageService.placeBid(req.params.id, garageId, parts);
+    const bid = await garageService.placeBid(req.params.id, garageId,description, timeline, parts);
 
     res.status(201).json(bid);
   } catch (error) {
