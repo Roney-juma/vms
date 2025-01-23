@@ -338,7 +338,7 @@ const acceptSupplierBid = async (claimId, bidId) => {
   );
 
   const claim = await Claim.findById(claimId);
-  claim.status = 'Repair';
+  claim.status = 'Garage';
   await claim.save();
 
   return supplyBid;
