@@ -184,7 +184,7 @@ const callForReAssessment = async (claimId) => {
         'Re-Assessment Required - Repair Completed',
         `Dear ${assessor.name},
 
-The repair for the claim with ID: ${claim._id} has been completed. Please visit the location to verify that the vehicle has been fully repaired.
+The repair for the claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been completed. Please visit the location to verify that the vehicle has been fully repaired.
 
 Thank you for your prompt attention to this matter.
 

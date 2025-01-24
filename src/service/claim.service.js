@@ -140,7 +140,7 @@ const approveClaim = async (id) => {
     await emailService.sendEmailNotification(
       claimant.email,
       'Claim Approval Notification',
-      `Dear ${claimant.name},\n\nWe are pleased to inform you that your claim with ID: ${claim._id} has been approved. The compensation will be processed shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+      `Dear ${claimant.name},\n\nWe are pleased to inform you that your claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been approved. The compensation will be processed shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
     );
   }
   return claim;
@@ -207,13 +207,13 @@ const awardClaim = async (id, bidId) => {
     await emailService.sendEmailNotification(
       assessor.email,
       'Claim Award Notification',
-      `Dear ${assessor.name},\n\nCongratulations! You have been awarded the claim with ID: ${claim._id}. You are required to submit a report within 3 days.\n\nPlease ensure that the report is submitted on time to facilitate the next steps in the claims process.\n\nBest Regards,\nAdmin Team`
+      `Dear ${assessor.name},\n\nCongratulations! You have been awarded the claim with ID: ${claim.vehiclesInvolved[0].licensePlate}. You are required to submit a report within 3 days.\n\nPlease ensure that the report is submitted on time to facilitate the next steps in the claims process.\n\nBest Regards,\nAdmin Team`
     );
     if (claim.claimant && claim.claimant.email) {
       await emailService.sendEmailNotification(
         claim.claimant.email,
         'Assessor Visit Notification',
-        `Dear ${claim.claimant.name},\n\nWe are pleased to inform you that your claim with ID: ${claim._id} has been awarded to an assessor. The assessor, ${assessor.name}, will be visiting to assess the state of your vehicle.\n\nHere are the assessor's contact details:\n- Phone: ${assessor.phone}\n- Email: ${assessor.email}\n\nPlease feel free to reach out to the assessor to coordinate the visit.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
+        `Dear ${claim.claimant.name},\n\nWe are pleased to inform you that your claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been awarded to an assessor. The assessor, ${assessor.name}, will be visiting to assess the state of your vehicle.\n\nHere are the assessor's contact details:\n- Phone: ${assessor.phone}\n- Email: ${assessor.email}\n\nPlease feel free to reach out to the assessor to coordinate the visit.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
       );
     }
   }
@@ -251,7 +251,7 @@ const awardBidToGarage = async (id, bidId) => {
   await Notification.create({
     recipientId: bid.garageId,
     recipientType: 'garage',
-    content: `Your bid for claim ID: ${claim._id} has been awarded.`,
+    content: `Your bid for claim ID: ${claim.vehiclesInvolved[0].licensePlate} has been awarded.`,
   });
 
   await claim.save();
@@ -261,7 +261,7 @@ const awardBidToGarage = async (id, bidId) => {
     await emailService.sendEmailNotification(
       garage.email,
       'Bid Award Notification',
-      `Dear ${garage.name},\n\nCongratulations! Your bid for the claim with ID: ${claim._id} has been awarded. You are requested to proceed with the repair of the vehicle as soon as possible.\n\nPlease ensure that all necessary repairs are completed in a timely and professional manner.\n\nThank you for your cooperation.\n\nBest Regards,\nAdmin Team`
+      `Dear ${garage.name},\n\nCongratulations! Your bid for the claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been awarded. You are requested to proceed with the repair of the vehicle as soon as possible.\n\nPlease ensure that all necessary repairs are completed in a timely and professional manner.\n\nThank you for your cooperation.\n\nBest Regards,\nAdmin Team`
     );
   }
 

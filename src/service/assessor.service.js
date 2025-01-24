@@ -172,7 +172,7 @@ const completeRepair = async (claimId) => {
       'Repair Completed - Verification Pending',
       `Dear ${claim.claimant.name},
 
-We are pleased to inform you that the repair for your claim with ID: ${claim._id} has been completed.
+We are pleased to inform you that the repair for your claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been completed.
 Please verify that the vehicle has been fully repaired.
 If you are satisfied with the repair, please reply to this email to confirm.
 Thank you for your patience during this process.
