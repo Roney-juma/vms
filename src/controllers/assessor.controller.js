@@ -130,7 +130,7 @@ const completeReAssessment = async (req, res) => {
 };
 const rejectReAssessment = async (req, res) => {
   try {
-    const rejectionReason = req.body.reason
+    const rejectionReason = req.body.rejectionReason
     const claim = await assessorService.rejectRepair(req.params.id,rejectionReason);
     res.status(200).json(claim);
   } catch (error) {
