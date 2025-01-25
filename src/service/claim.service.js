@@ -227,6 +227,10 @@ const awardBidToGarage = async (id, bidId) => {
 
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
+<<<<<<< HEAD
+=======
+
+>>>>>>> a07f8df35b84b85540fa5f950d9f8c4db7810c8f
   bid.status = 'awarded';
 
   claim.awardedGarage = {
@@ -266,7 +270,7 @@ const awardBidToGarage = async (id, bidId) => {
   }
 
   // Email to Customer
-   // Assuming claim has `customerId` populated
+  // Assuming claim has `customerId` populated
   if (claim.claimant?.email) {
     await emailService.sendEmailNotification(
       claim.claimant?.email,
@@ -284,6 +288,10 @@ const awardBidToGarage = async (id, bidId) => {
 // Get awarded claims
 const getAwardedClaims = async () => {
   return await Claim.find({ awardedAssessor: { $exists: true } });
+};
+const updateClaim = async (id, updateData) => {
+  updateData.status = 'Garage';
+  return await Claim.findByIdAndUpdate(id, updateData, { new: true });
 };
 
 // Get bids by claim

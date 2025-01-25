@@ -121,10 +121,10 @@ const getAssessorBids = async (assessorId) => {
 const submitAssessmentReport = async (claimId, assessmentReport) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new ApiError(404, 'Claim not found');
-    const parts = assessmentReport.parts.map((part) => {
-      return { partName: part, cost: '' }
-      })
-      assessmentReport.parts = parts
+  const parts = assessmentReport.parts.map((part) => {
+    return { partName: part, cost: '' }
+  })
+  assessmentReport.parts = parts
 
 
   claim.assessmentReport = assessmentReport;
@@ -183,15 +183,15 @@ Admin Team`
   }
   return claim;
 };
-const rejectRepair = async (claimId,rejectionReason) => {
+const rejectRepair = async (claimId, rejectionReason) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
   if (claim.status !== 'Re-Assessment') throw new Error('Claim must be under Re-Assessment to mark it as Rejected');
   claim.status = 'Repair';
   claim.rejectionReason = rejectionReason;
   await claim.save();
-      return claim;
-      };
+  return claim;
+};
 
 
 

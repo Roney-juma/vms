@@ -211,6 +211,17 @@ const acceptSupplierBid = async (req, res) => {
   }
 };
 
+// Update claim
+const updateClaimById = async (req, res) => {
+  try {
+    const updatedClaim = await claimService.updateClaim(req.params.id, req.body);
+    if (!updatedClaim) return res.status(404).json({ message: 'Claim not found' });
+    res.status(200).json(updatedClaim);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   generateClaimLinkController,
   fileClaim,
@@ -231,4 +242,5 @@ module.exports = {
   getAssessedClaimsByGarage,
   getSupplierBidsForClaim,
   acceptSupplierBid,
+  updateClaimById
 };
