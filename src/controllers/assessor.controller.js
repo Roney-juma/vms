@@ -69,7 +69,7 @@ const deleteAssessor = async (req, res) => {
 
 const getApprovedClaims = async (req, res) => {
   try {
-    const claims = await assessorService.getApprovedClaims();
+    const claims = await assessorService.getApprovedClaims(req.params.assessorId);
     res.status(200).json(claims);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -112,11 +112,11 @@ const submitAssessmentReport = async (req, res) => {
 };
 const resetPassword = async (req, res) => {
   try {
-      const { email, newPassword } = req.body;
-      const response = await assessorService.resetPassword(email, newPassword);
-      res.status(200).json(response);
+    const { email, newPassword } = req.body;
+    const response = await assessorService.resetPassword(email, newPassword);
+    res.status(200).json(response);
   } catch (err) {
-      res.status(400).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 };
 const completeReAssessment = async (req, res) => {
@@ -131,7 +131,7 @@ const completeReAssessment = async (req, res) => {
 const rejectReAssessment = async (req, res) => {
   try {
     const rejectionReason = req.body.rejectionReason
-    const claim = await assessorService.rejectRepair(req.params.id,rejectionReason);
+    const claim = await assessorService.rejectRepair(req.params.id, rejectionReason);
     res.status(200).json(claim);
   } catch (error) {
     console.error('Error completing repair:', error.message);

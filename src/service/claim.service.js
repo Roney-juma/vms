@@ -227,10 +227,6 @@ const awardBidToGarage = async (id, bidId) => {
 
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
-<<<<<<< HEAD
-=======
-
->>>>>>> a07f8df35b84b85540fa5f950d9f8c4db7810c8f
   bid.status = 'awarded';
 
   claim.awardedGarage = {

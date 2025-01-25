@@ -43,9 +43,62 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   return user;
 };
 
-const getApprovedClaims = async () => {
-  return await Claim.find({ status: 'Approved', awardedAssessor: { $exists: false } });
+const getApprovedClaims = async (assessorId) => {
+  const assessor = await Assessor.findById(assessorId);
+  if (!assessor) throw new Error('Assessor not found');
+
+  const asseslatitude = assessor.location.latitude
+  const asseslongitude = assessor.location.longitude;
+  console.log("asseslongitude, longitudestance", assessor.location.latitude, asseslongitude)
+  if (!asseslatitude || !asseslatitude || !asseslongitude) {
+    throw new Error('Assessor location coordinates are missing');
+  }
+
+  const claims = await Claim.find({
+    status: 'Approved',
+    // awardedAssessor: { $exists: false }
+  });
+  // Filter claims based on proximity to the assessor's location
+  const nearbyClaims = claims.filter((claim) => {
+    const { latitude, longitude } = claim.incidentDetails;
+    console.log("claim.insidentDetails", claim.incidentDetails)
+    console.log("dilatitude, longitudestance", latitude, longitude)
+
+    if (!latitude || !longitude) return false;
+
+    const distance = getDistanceFromLatLonInKm(
+      asseslatitude,
+      asseslongitude,
+      latitude,
+      longitude
+    );
+    console.log("distance", distance)
+
+    return distance <= 20;
+  });
+
+  return nearbyClaims;
 };
+const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = degToRad(lat2 - lat1);
+  const dLon = degToRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(degToRad(lat1)) *
+    Math.cos(degToRad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance;
+};
+
+const degToRad = (deg) => (deg * Math.PI) / 180;
+
 
 const placeBid = async (claimId, assessorId, amount, description, timeline) => {
 
