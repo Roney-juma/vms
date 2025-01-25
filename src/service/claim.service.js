@@ -118,10 +118,56 @@ const createClaim = async (data) => {
 };
 
 // Get all claims
-// Get all claims
 const getClaims = async () => {
-  return await Claim.find().sort({ createdAt: -1 });
+  const claims = await Claim.find().sort({ createdAt: -1 });
+
+  for (let claim of claims) {
+    // Check if the claim is approved and has at least 3 assessor bids
+    if (claim.bids.length >= 3 && claim.status === 'Approved') {
+      const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
+      if (assessorBids.length === 0) continue;
+      let topRatedBid = null;
+      let highestRating = -1;
+
+      assessorBids.forEach(bid => {
+        if (bid.assessorDetails && bid.assessorDetails.ratings.averageRating > highestRating) {
+          highestRating = bid.assessorDetails.ratings.averageRating;
+          topRatedBid = bid;
+        }
+      });
+
+      // Award the top-rated assessor bid if found
+      if (topRatedBid) {
+        await awardClaim(claim._id, topRatedBid._id);
+      }
+    }
+
+    // Check if the claim status is 'Garage' and has at least 3 garage bids
+    const garageBids = claim.bids.filter(bid => bid.bidderType === 'garage');
+    if (claim.status === 'Garage' && garageBids >= 3) {
+
+      if (garageBids.length === 0) continue;
+      let topRatedGarageBid = null;
+      let highestGarageRating = -1;
+
+      garageBids.forEach(bid => {
+        if (bid.garageDetails && bid.garageDetails.ratings.averageRating > highestGarageRating) {
+          highestGarageRating = bid.garageDetails.ratings.averageRating;
+          topRatedGarageBid = bid;
+        }
+      });
+
+      // Award the top-rated garage bid if found
+      if (topRatedGarageBid) {
+        await awardBidToGarage(claim._id, topRatedGarageBid._id);
+      }
+    }
+  }
+
+  return claims;
 };
+
+
 
 
 // Get claims by customer ID
