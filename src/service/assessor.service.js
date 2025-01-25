@@ -49,20 +49,17 @@ const getApprovedClaims = async (assessorId) => {
 
   const asseslatitude = assessor.location.latitude
   const asseslongitude = assessor.location.longitude;
-  console.log("asseslongitude, longitudestance", assessor.location.latitude, asseslongitude)
   if (!asseslatitude || !asseslatitude || !asseslongitude) {
     throw new Error('Assessor location coordinates are missing');
   }
 
   const claims = await Claim.find({
     status: 'Approved',
-    // awardedAssessor: { $exists: false }
+    awardedAssessor: { $exists: false }
   });
   // Filter claims based on proximity to the assessor's location
   const nearbyClaims = claims.filter((claim) => {
     const { latitude, longitude } = claim.incidentDetails;
-    console.log("claim.insidentDetails", claim.incidentDetails)
-    console.log("dilatitude, longitudestance", latitude, longitude)
 
     if (!latitude || !longitude) return false;
 

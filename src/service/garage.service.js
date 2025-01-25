@@ -106,11 +106,61 @@ const deleteGarage = async (garageId) => {
   return await Garage.findByIdAndDelete(garageId);
 };
 
-const getAssessedClaims = async () => {
-  return await Claim.find({ status: 'Garage', awardedGarage: { $exists: false } });
+const getAssessedClaims = async (garageId) => {
+  const garage = await Garage.findById(garageId);
+  if (!garage) throw new Error('garage not found');
+
+  const asseslatitude = garage.location.latitude
+  const asseslongitude = garage.location.longitude;
+  console.log("asseslongitude, longitudestance", garage.location.latitude, asseslongitude)
+  if (!asseslatitude || !asseslongitude) {
+    throw new Error('garage location coordinates are missing');
+  }
+
+  const claims = await Claim.find({
+    status: 'Garage',
+    awardedGarage: { $exists: false }
+  });
+  // Filter claims based on proximity to the assessor's location
+  const nearbyClaims = claims.filter((claim) => {
+    const { latitude, longitude } = claim.incidentDetails;
+
+    if (!latitude || !longitude) return false;
+
+    const distance = getDistanceFromLatLonInKm(
+      asseslatitude,
+      asseslongitude,
+      latitude,
+      longitude
+    );
+    console.log("distance", distance)
+
+    return distance <= 20;
+  });
+
+  return nearbyClaims;
+};
+const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = degToRad(lat2 - lat1);
+  const dLon = degToRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(degToRad(lat1)) *
+    Math.cos(degToRad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance;
 };
 
-const placeBid = async (claimId, garageId,description, timeline, parts) => {
+const degToRad = (deg) => (deg * Math.PI) / 180;
+
+const placeBid = async (claimId, garageId, description, timeline, parts) => {
   const claim = await Claim.findById(claimId);
   if (!claim) throw new Error('Claim not found');
 

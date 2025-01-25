@@ -30,7 +30,7 @@ const login = async (req, res) => {
 
 const getAllGarages = async (req, res) => {
   try {
-    const { page = 1, limit = 10, city, estate, state } = req.query; 
+    const { page = 1, limit = 10, city, estate, state } = req.query;
     const filter = {};
 
     if (city) {
@@ -84,7 +84,7 @@ const deleteGarage = async (req, res) => {
 
 const getAssessedClaims = async (req, res) => {
   try {
-    const claims = await garageService.getAssessedClaims();
+    const claims = await garageService.getAssessedClaims(req.params.garageId);
     res.status(200).json(claims);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -95,8 +95,8 @@ const placeBid = async (req, res) => {
   const { garageId, description, timeline, parts } = req.body;
 
   try {
-    
-    const bid = await garageService.placeBid(req.params.id, garageId,description, timeline, parts);
+
+    const bid = await garageService.placeBid(req.params.id, garageId, description, timeline, parts);
 
     res.status(201).json(bid);
   } catch (error) {
@@ -127,11 +127,11 @@ const getGarageBids = async (req, res) => {
 };
 const resetPassword = async (req, res) => {
   try {
-      const { email, newPassword } = req.body;
-      const response = await garageService.resetPassword(email, newPassword);
-      res.status(200).json(response);
+    const { email, newPassword } = req.body;
+    const response = await garageService.resetPassword(email, newPassword);
+    res.status(200).json(response);
   } catch (err) {
-      res.status(400).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 };
 
