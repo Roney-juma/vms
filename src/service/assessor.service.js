@@ -40,9 +40,59 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   return user;
 };
 
-const getApprovedClaims = async () => {
-  return await Claim.find({ status: 'Approved', awardedAssessor: { $exists: false } });
+const getApprovedClaims = async (assessorId) => {
+  const assessor = await Assessor.findById(assessorId);
+  if (!assessor) throw new Error('Assessor not found');
+
+  const { city, latitude, longitude } = assessor.location;
+  console.log("latitude, longitude", latitude, longitude)
+
+  if (!latitude || longitude) {
+    throw new Error('Assessor location coordinates are missing');
+  }
+
+  const claims = await Claim.find({
+    status: 'Approved',
+    awardedAssessor: { $exists: false }
+  });
+  const nearbyClaims = claims.filter((claim) => {
+    const { latitude, longitude } = claim.insidentDetails;
+
+    if (!latitude || !longitude) return false;
+
+    const distance = getDistanceFromLatLonInKm(
+      coordinates.latitude,
+      coordinates.longitude,
+      latitude,
+      longitude
+    );
+
+    return distance <= 50; // Adjust the distance threshold as needed (e.g., 50 km)
+  });
+
+  return nearbyClaims;
 };
+const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = degToRad(lat2 - lat1);
+  const dLon = degToRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(degToRad(lat1)) *
+    Math.cos(degToRad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in kilometers
+
+  return distance;
+};
+
+// Helper function to convert degrees to radians
+const degToRad = (deg) => (deg * Math.PI) / 180;
+
 
 const placeBid = async (claimId, assessorId, amount) => {
   const claim = await Claim.findById(claimId);
@@ -103,7 +153,7 @@ const submitAssessmentReport = async (claimId, assessmentReport) => {
 const resetPassword = async (email, newPassword) => {
   const user = await Assessor.findOne({ email });
   if (!user) {
-      throw new Error('Invalid request');
+    throw new Error('Invalid request');
   }
 
   // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);

@@ -91,7 +91,7 @@ const awardClaim = async (id, bidId) => {
   if (!claim) throw new Error('Claim not found');
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
-  
+
   bid.status = 'awarded';
   claim.awardedAssessor = {
     assessorId: bid.assessorId,
@@ -103,15 +103,15 @@ const awardClaim = async (id, bidId) => {
       otherBid.status = 'rejected';
     }
   });
-  
+
   await Notification.create({
     recipientId: bid.assessorId,
     recipientType: 'assessor',
     content: `Your bid for claim ID: ${claim._id} has been awarded.`
   });
-  
+
   await claim.save();
-  
+
   const assessor = await Assessor.findById(bid.assessorId);
   if (assessor && assessor.email) {
     await emailService.sendEmailNotification(
@@ -136,7 +136,7 @@ const awardBidToGarage = async (id, bidId) => {
   if (!claim) throw new Error('Claim not found');
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
-  
+
   bid.status = 'awarded';
   claim.awardedGarage = {
     garageId: bid.garageId,
@@ -149,15 +149,15 @@ const awardBidToGarage = async (id, bidId) => {
       otherBid.status = 'rejected';
     }
   });
-  
+
   await Notification.create({
     recipientId: bid.garageId,
     recipientType: 'garage',
     content: `Your bid for claim ID: ${claim._id} has been awarded.`
   });
-  
+
   await claim.save();
-  
+
   const garage = await Garage.findById(bid.garageId);
   if (garage && garage.email) {
     await emailService.sendEmailNotification(
@@ -172,6 +172,10 @@ const awardBidToGarage = async (id, bidId) => {
 // Get awarded claims
 const getAwardedClaims = async () => {
   return await Claim.find({ awardedAssessor: { $exists: true } });
+};
+const updateClaim = async (id, updateData) => {
+  updateData.status = 'Garage';
+  return await Claim.findByIdAndUpdate(id, updateData, { new: true });
 };
 
 // Get bids by claim
@@ -216,19 +220,19 @@ const getSupplierBidsForClaim = async (claimId) => {
 const acceptSupplierBid = async (claimId, bidId) => {
   const supplyBid = await SupplyBid.findById(bidId);
   if (!supplyBid) throw new Error('Supply bid not found');
-  
+
   supplyBid.status = 'Accepted';
   await supplyBid.save();
-  
+
   await SupplyBid.updateMany(
-    { _id: { $ne: bidId }, claimId: claimId }, 
+    { _id: { $ne: bidId }, claimId: claimId },
     { $set: { status: 'Rejected' } }
   );
-  
+
   const claim = await Claim.findById(claimId);
   claim.status = 'Repair';
   await claim.save();
-  
+
   return supplyBid;
 };
 

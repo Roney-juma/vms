@@ -1,15 +1,16 @@
 const claimController = require("../controllers/claim.controllers")
-const express =require("express")
+const express = require("express")
 
 const router = express.Router();
 
 
-router.post('/create',claimController.createClaim )
-router.get('/',claimController.getClaims )
-router.patch('/approve/:id',claimController.approveClaim)
+router.post('/create', claimController.createClaim)
+router.get('/', claimController.getClaims)
+router.patch('/approve/:id', claimController.approveClaim)
 router.delete('/delete/:id', claimController.deleteClaim)
 router.patch('/reject/:id', claimController.rejectClaim)
 router.get('/:id', claimController.getClaimById)
+router.patch('/:id', claimController.updateClaimById)
 router.post('/awardClaim/:id', claimController.awardClaim)
 router.post('/awardGarage/:id', claimController.awardBidToGarage)
 router.get('/awarded', claimController.getAwardedClaims)
