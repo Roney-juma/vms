@@ -372,4 +372,5 @@ module.exports = {
   getAssessedClaimsByGarage,
   getSupplierBidsForClaim,
   acceptSupplierBid,
+  updateClaim
 };
