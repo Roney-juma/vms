@@ -51,11 +51,23 @@ const getCustomerClaims = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-      const { email, newPassword } = req.body;
-      const response = await customerService.resetPassword(email, newPassword);
-      res.status(200).json(response);
+    const { email, newPassword } = req.body;
+    const response = await customerService.resetPassword(email, newPassword);
+    res.status(200).json(response);
   } catch (err) {
-      res.status(400).json({ error: err.message });
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// updateCustomer
+const updateCustomer = async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+    const customer = req.body;
+    const updatedCustomer = await customerService.updateCustomer(customerId, customer);
+    res.status(200).json(updatedCustomer);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -64,5 +76,6 @@ module.exports = {
   login,
   getAllCustomers,
   getCustomerClaims,
-  resetPassword
+  resetPassword,
+  updateCustomer
 };

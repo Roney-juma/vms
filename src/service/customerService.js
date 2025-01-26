@@ -8,13 +8,13 @@ const emailService = require("../service/email.service");
 const tokenService = require("../service/token.service");
 
 async function createCustomer(cus) {
-    const existingGarage = await Garage.findOne({ email: cus.email });
-    const existingCustomer = await Customer.findOne({ email: cus.email });
-    const existingAssessor = await Assessor.findOne({ email: cus.email });
-    if (existingGarage || existingCustomer || existingAssessor) {
-      throw new Error('We already have this Email in the System');
-    }
-  
+  const existingGarage = await Garage.findOne({ email: cus.email });
+  const existingCustomer = await Customer.findOne({ email: cus.email });
+  const existingAssessor = await Assessor.findOne({ email: cus.email });
+  if (existingGarage || existingCustomer || existingAssessor) {
+    throw new Error('We already have this Email in the System');
+  }
+
   if (existingCustomer) {
     throw new Error('Customer already exists');
   }
@@ -77,7 +77,7 @@ const sendWelcomeEmail = async (customer) => {
 const resetPassword = async (email, newPassword) => {
   const user = await Customer.findOne({ email });
   if (!user) {
-      throw new Error('Invalid request');
+    throw new Error('Invalid request');
   }
 
   // const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
@@ -97,6 +97,14 @@ const resetPassword = async (email, newPassword) => {
   return { message: 'Password has been reset successfully' };
 };
 
+// update customer
+const updateCustomer = async (customerId, customer) => {
+  return await Customer.findByIdAndUpdate
+    (customerId, customer, { new: true });
+}
+
+
+
 module.exports = {
   createCustomer,
   loginUser,
@@ -104,5 +112,6 @@ module.exports = {
   getCustomerClaims,
   sendWelcomeEmail,
   resetPassword,
+  updateCustomer
 };
 
