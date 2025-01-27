@@ -339,12 +339,12 @@ const getAwardedClaims = async () => {
   return await Claim.find({ awardedAssessor: { $exists: true } });
 };
 const updateClaim = async (id, updateData) => {
-  updateData.status = 'Repair';
-  updateData.awardedAmount = 0,
-  updateData.awardedDate = Date.now()
-  updateData.bidId = "selected-garage"
+  updateData.awardedGarage.status = 'Repair';
+  updateData.awardedGarage.awardedAmount = 0,
+  updateData.awardedGarage.awardedDate = Date.now()
+  updateData.awardedGarage.bidId = "selected-garage"
 
-  const garage = await Garage.findById(awardedGarage.garageId);
+  const garage = await Garage.findById(updateData.awardedGarage.garageId);
   if (!garage) throw new Error('Garage not found');
 
   garage.pendingWork = (garage.pendingWork || 0) + 1;
