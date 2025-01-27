@@ -126,21 +126,28 @@ const getClaims = async () => {
     if (claim.bids.length >= 3 && claim.status === 'Approved') {
       const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
       if (assessorBids.length === 0) continue;
+    
       let topRatedBid = null;
       let highestRating = -1;
-
+    
       assessorBids.forEach(bid => {
         if (bid.assessorDetails && bid.assessorDetails.ratings.averageRating > highestRating) {
           highestRating = bid.assessorDetails.ratings.averageRating;
-          topRatedBid = bid;
+          topRatedBid = bid; // Update the top-rated bid
+        } else if (
+          bid.assessorDetails &&
+          bid.assessorDetails.ratings.averageRating === highestRating
+        ) {
+          // If ratings are equal, keep the current top-rated bid (first encountered one)
+          return;
         }
       });
-
-      // Award the top-rated assessor bid if found
+    
       if (topRatedBid) {
         await awardClaim(claim._id, topRatedBid._id);
       }
     }
+    
 
     // Check if the claim status is 'Garage' and has at least 3 garage bids
     const garageBids = claim.bids.filter(bid => bid.bidderType === 'garage');
