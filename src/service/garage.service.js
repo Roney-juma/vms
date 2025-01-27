@@ -11,8 +11,8 @@ const createGarage = async (garage) => {
 
   const existingGarage = await Garage.findOne({ email: garage.email });
   const existingCustomer = await customerModel.findOne({ email: garage.email });
-  const existingAssessor = await Assessor.findOne({ email: garage.email });
-  if (existingGarage || existingCustomer || existingAssessor) {
+  // const existingAssessor = await Assessor.findOne({ email: garage.email });
+  if (existingGarage || existingCustomer) {
     throw new Error('We Already have a user with this Email');
   }
 

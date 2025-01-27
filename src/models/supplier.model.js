@@ -17,7 +17,7 @@ const supplierSchema = new mongoose.Schema({
   },
   company: { type: String, required: true },
   ratings: {
-    averageRating: { type: Number, default: 5 },
+    averageRating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
     reviews: [{
       customerId: { type: ObjectId, ref: 'Customer' },
