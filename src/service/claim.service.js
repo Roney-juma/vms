@@ -342,6 +342,8 @@ const updateClaim = async (id, updateData) => {
   updateData.status = 'Repair';
   updateData.awardedAmount = 0,
   updateData.awardedDate = Date.now()
+  updateData.bidId = "selected-garage"
+
   const garage = await Garage.findById(awardedGarage.garageId);
   if (!garage) throw new Error('Garage not found');
 
