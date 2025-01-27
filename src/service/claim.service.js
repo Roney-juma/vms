@@ -339,7 +339,7 @@ const getAwardedClaims = async () => {
   return await Claim.find({ awardedAssessor: { $exists: true } });
 };
 const updateClaim = async (id, updateData) => {
-  updateData.awardedGarage.status = 'Repair';
+  updateData.status = 'Repair';
   updateData.awardedGarage.awardedAmount = 0,
   updateData.awardedGarage.awardedDate = Date.now()
   updateData.awardedGarage.bidId = "selected-garage"
