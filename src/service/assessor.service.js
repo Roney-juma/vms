@@ -218,7 +218,7 @@ const completeRepair = async (claimId) => {
   await claim.save();
   // Get garage and reduce their pending repairs
   const garage = await Garage.findById(claim.awardedGarage.garageId);
-  garage.pendingRepairs -= 1;
+  garage.pendingWork -= 1;
   await garage.save();
 
   if (claim.claimant && claim.claimant.email) {
