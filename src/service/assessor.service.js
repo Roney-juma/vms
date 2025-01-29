@@ -1,4 +1,5 @@
 const Assessor = require('../models/assessor.model');
+const Garage = require('../models/garage.model');
 const bcrypt = require('bcrypt');
 const Claim = require('../models/claim.model');
 const ApiError = require('../utils/ApiError');
@@ -215,6 +216,10 @@ const completeRepair = async (claimId) => {
   claim.status = 'Completed';
   claim.repairDate = new Date();
   await claim.save();
+  // Get garage and reduce their pending repairs
+  const garage = await Garage.findById(claim.awardedGarage.garageId);
+  garage.pendingRepairs -= 1;
+  await garage.save();
 
   if (claim.claimant && claim.claimant.email) {
     await emailService.sendEmailNotification(

@@ -324,7 +324,15 @@ const awardBidToGarage = async (id, bidId) => {
     await emailService.sendEmailNotification(
       claim.claimant?.email,
       'Repair Details for Your Vehicle',
-      `Dear ${claim.claimant?.name},\n\nWe are pleased to inform you that your claim for (ID: ${claim.vehiclesInvolved[0].licensePlate}) has been processed, and your vehicle will be repaired at the following garage:\n\nGarage Details:\n- Name: ${garage.name}\n- Location: ${garage.location.address}, ${garage.location.city}\n- Ratings: ${garage.ratings.averageRating || 'No ratings available'}\n- Description: ${garage.description || 'No description available'}\n\nThe garage will contact you shortly to proceed with the repairs. If you have any questions, please feel free to reach out.\n\nThank you for choosing our services.\n\nBest Regards,\nAdmin Team`
+      `Dear ${claim.claimant?.name},\n
+      \nWe are pleased to inform you that your claim for (ID: ${claim.vehiclesInvolved[0].licensePlate}) has been processed, and your vehicle will be repaired at the following garage:\n
+      \nGarage Details:
+      \n- Name: ${garage.name}
+      \n- Location: ${garage.location.name},
+      \n- Timeline: ${bid.garageDetails.$exists ? bid.garageDetails.timeline : 'No timeline available'}
+      \n- Ratings: ${garage.ratings.averageRating || 'No ratings available'}
+      \n- Description: ${garage.description || 'No description available'}\n
+      \nThe garage will contact you shortly to proceed with the repairs. If you have any questions, please feel free to reach out.\n\nThank you for choosing our services.\n\nBest Regards,\nAdmin Team`
     );
   }
 
