@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/create', claimController.createClaim)
 router.get('/', claimController.getClaims)
+router.get('/count', claimController.countClaimsByStatus)
 router.post('/generate-claim-link', claimController.generateClaimLinkController);
 router.post('/file-claim/:token', claimController.fileClaim);
 router.patch('/approve/:id', claimController.approveClaim)
@@ -24,7 +25,7 @@ router.get('/assessed/:id', claimController.getAssessedClaimById);
 // router.get('/assessed/repair/:id', claimController.getAssessedRepairClaimById);
 router.get('/supplier-bids/:claimId', claimController.getSupplierBidsForClaim)
 router.post('/acceptSupplier/:claimId/:bidId', claimController.acceptSupplierBid)
-router.get('/count', claimController.countClaimsByStatus)
+
 
 
 
