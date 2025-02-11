@@ -321,6 +321,22 @@ const resetPassword = async (email, newPassword) => {
   return { message: 'Password has been reset successfully' };
 };
 
+// Garage stats include  count, pendingWork and averageRating
+const getGarageStats = async () => {
+  const garagesCount = await Garage.countDocuments();
+  const pendingWorkCount = await Garage.countDocuments({ pendingWork: { $gt: 0 } });
+  const averageRating = await Garage.aggregate([
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: '$ratings.averageRating' },
+      },
+    },
+  ]);
+
+  return { garagesCount, pendingWorkCount, averageRating: averageRating[0].averageRating || 0 };
+};
+
 
 module.exports = {
   createGarage,
@@ -333,5 +349,6 @@ module.exports = {
   placeBid,
   callForReAssessment,
   getGarageBids,
-  resetPassword
+  resetPassword,
+  getGarageStats,
 };
