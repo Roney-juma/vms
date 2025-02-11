@@ -101,7 +101,20 @@ const resetPassword = async (email, newPassword) => {
 const updateCustomer = async (customerId, customer) => {
   return await Customer.findByIdAndUpdate
     (customerId, customer, { new: true });
-}
+};
+
+const getCustomerStats = async () => {
+  const customersCount = await Customer.countDocuments();
+  const newCustomersCount = await Customer.countDocuments({
+    createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+  });
+  const recurringCustomersCount = customersCount - newCustomersCount;
+  return { customersCount, newCustomersCount, recurringCustomersCount };
+  };
+
+
+
+
 
 
 
@@ -112,6 +125,7 @@ module.exports = {
   getCustomerClaims,
   sendWelcomeEmail,
   resetPassword,
-  updateCustomer
+  updateCustomer,
+  getCustomerStats
 };
 

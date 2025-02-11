@@ -70,6 +70,15 @@ const updateCustomer = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// customerStats
+const getCustomerStats = async (req, res) => {
+  try {
+    const stats = await customerService.getCustomerStats();
+    res.status(200).json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   createCustomer,
@@ -77,5 +86,6 @@ module.exports = {
   getAllCustomers,
   getCustomerClaims,
   resetPassword,
-  updateCustomer
+  updateCustomer,
+  getCustomerStats
 };
