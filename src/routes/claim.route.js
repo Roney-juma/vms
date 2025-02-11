@@ -24,6 +24,7 @@ router.get('/assessed/:id', claimController.getAssessedClaimById);
 // router.get('/assessed/repair/:id', claimController.getAssessedRepairClaimById);
 router.get('/supplier-bids/:claimId', claimController.getSupplierBidsForClaim)
 router.post('/acceptSupplier/:claimId/:bidId', claimController.acceptSupplierBid)
+router.get('/count', claimController.countClaimsByStatus)
 
 
 

@@ -418,6 +418,18 @@ const acceptSupplierBid = async (claimId, bidId) => {
   return supplyBid;
 };
 
+const countClaimsByStatus = async () => {
+  return await Claim.aggregate([
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+  };
+
+
 module.exports = {
   generateClaimLink,
   fileClaimService,
@@ -438,5 +450,6 @@ module.exports = {
   getAssessedClaimsByGarage,
   getSupplierBidsForClaim,
   acceptSupplierBid,
-  updateClaim
+  updateClaim,
+  countClaimsByStatus
 };

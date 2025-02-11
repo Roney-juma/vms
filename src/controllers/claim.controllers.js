@@ -221,6 +221,15 @@ const updateClaimById = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+// Count claims by status
+const countClaimsByStatus = async (req, res) => {
+  try {
+    const count = await claimService.countClaimsByStatus();
+    res.status(200).json(count);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 module.exports = {
   generateClaimLinkController,
@@ -242,5 +251,6 @@ module.exports = {
   getAssessedClaimsByGarage,
   getSupplierBidsForClaim,
   acceptSupplierBid,
-  updateClaimById
+  updateClaimById,
+  countClaimsByStatus
 };
