@@ -247,6 +247,21 @@ const rejectRepair = async (claimId, rejectionReason) => {
   await claim.save();
   return claim;
 };
+// Assessor statistics for the admin dashboard
+const getAssessorStatistics = async () => {
+  const totalAssessors = await Assessor.countDocuments();
+  const busyAssessors = await Assessor.countDocuments({ "ratings.totalRatings": { $gt: 0 } });
+  const freeAssessors = totalAssessors - busyAssessors;
+
+  return {
+    totalAssessors,
+    busyAssessors,
+    freeAssessors
+  };
+};
+
+  
+
 
 
 
@@ -266,5 +281,6 @@ module.exports = {
   submitAssessmentReport,
   resetPassword,
   completeRepair,
-  rejectRepair
+  rejectRepair,
+  getAssessorStatistics
 };

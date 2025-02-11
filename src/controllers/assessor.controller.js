@@ -139,6 +139,16 @@ const rejectReAssessment = async (req, res) => {
   }
 };
 
+const getAssessorStatistics = async (req, res) => {
+  try {
+    const statistics = await assessorService.getAssessorStatistics(req.params.assessorId);
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
   login,
   createAssessor,
@@ -152,5 +162,6 @@ module.exports = {
   submitAssessmentReport,
   resetPassword,
   completeReAssessment,
-  rejectReAssessment
+  rejectReAssessment,
+  getAssessorStatistics
 };
