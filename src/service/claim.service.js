@@ -419,7 +419,10 @@ const acceptSupplierBid = async (claimId, bidId) => {
 };
 
 const countClaimsByStatus = async () => {
-  return await Claim.aggregate([
+  const allStatuses = ['Pending', 'Approved', 'Rejected', 'Assessment', 'Assessed', 'Repair', 'Garage', 'Re-Assessment', 'Completed'];
+
+  // Fetch counts from the database
+  const counts = await Claim.aggregate([
     {
       $group: {
         _id: '$status',
@@ -427,7 +430,21 @@ const countClaimsByStatus = async () => {
       }
     }
   ]);
-  };
+
+  // Create a map for quick lookup of counts by status
+  const countsMap = new Map(counts.map(count => [count._id, count.count]));
+
+  // Ensure all statuses are represented in the result
+  const result = allStatuses.map(status => ({
+    _id: status,
+    count: countsMap.get(status) || 0
+  }));
+  // the result should be an object of key values
+  return result.reduce((acc, curr) => {
+    acc[curr._id] = curr.count;
+    return acc;
+    }, {});
+};
 
 
 module.exports = {
