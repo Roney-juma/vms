@@ -273,6 +273,7 @@ const getTopAssessors = async () => {
     {
       $project: {
         name: 1,
+        'ratings.averageRating': 1,
         totalClaimsAssessed: { $size: '$claims' },
       },
     },
