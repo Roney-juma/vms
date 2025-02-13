@@ -336,6 +336,28 @@ const getGarageStats = async () => {
 
   return { garagesCount, pendingWorkCount, averageRating: averageRating[0].averageRating || 0 };
 };
+// Top 10 garages with highest number of claims awarded
+const getTopGarages = async () => {
+  const topGarages = await Garage.aggregate([
+    {
+      $lookup: {
+        from: 'claims',
+        localField: '_id',
+        foreignField: 'awardedGarage.garageId',
+        as: 'claims',
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        totalClaimsRepaired: { $size: '$claims' },
+      },
+    },
+    { $sort: { totalClaimsRepaired: -1 } },
+    { $limit: 10 },
+  ]);
+  return topGarages;
+}
 
 
 module.exports = {
@@ -351,4 +373,5 @@ module.exports = {
   getGarageBids,
   resetPassword,
   getGarageStats,
+  getTopGarages
 };

@@ -8,6 +8,7 @@ router.post('/login', garageController.login)
 router.post('/reset-password', garageController.resetPassword);
 router.post('/create', garageController.createGarage)
 router.get('/stats', garageController.getGarageStats)
+router.get('/topGarages', garageController.getTopGarages)
 router.get('/', garageController.getAllGarages)
 router.get('/assessedClaims/:garageId', garageController.getAssessedClaims)
 router.delete('/delete/:garageId', garageController.deleteGarage)

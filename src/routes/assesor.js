@@ -9,6 +9,7 @@ router.post('/create', assesorController.createAssessor)
 router.post('/login', assesorController.login)
 router.post('/reset-password', assesorController.resetPassword);
 router.get('/stats', assesorController.getAssessorStatistics)
+router.get('/topAssessors', assesorController.getTopAssessors)
 router.get('/', assesorController.getAllAssessors)
 router.get('/approvedClaims/:assessorId', assesorController.getApprovedClaims)
 router.post('/submitReport/:claimId', assesorController.submitAssessmentReport)

@@ -147,6 +147,15 @@ const getAssessorStatistics = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// Top 5 Assessors with the highest number of claims
+const getTopAssessors = async (req, res) => {
+  try {
+    const topAssessors = await assessorService.getTopAssessors();
+    res.status(200).json(topAssessors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 
 module.exports = {
@@ -163,5 +172,6 @@ module.exports = {
   resetPassword,
   completeReAssessment,
   rejectReAssessment,
-  getAssessorStatistics
+  getAssessorStatistics,
+  getTopAssessors
 };

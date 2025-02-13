@@ -143,6 +143,16 @@ const getGarageStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Top Garages 
+const getTopGarages = async (req, res) => {
+  try {
+    const topGarages = await garageService.getTopGarages();
+    res.status(200).json(topGarages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+  };
+
 
 module.exports = {
   createGarage,
@@ -156,5 +166,6 @@ module.exports = {
   completeRepair,
   getGarageBids,
   resetPassword,
-  getGarageStats
+  getGarageStats,
+  getTopGarages
 };

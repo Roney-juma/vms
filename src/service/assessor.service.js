@@ -260,6 +260,28 @@ const getAssessorStatistics = async () => {
   };
 };
 
+const getTopAssessors = async () => {
+  const topAssessors = await Assessor.aggregate([
+    {
+      $lookup: {
+        from: 'claims',
+        localField: '_id',
+        foreignField: 'awardedAssessor.assessorId',
+        as: 'claims',
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        totalClaimsAssessed: { $size: '$claims' },
+      },
+    },
+    { $sort: { totalClaimsAssessed: -1 } },
+    { $limit: 10 },
+  ]);
+  return topAssessors;
+}
+
   
 
 
@@ -282,5 +304,6 @@ module.exports = {
   resetPassword,
   completeRepair,
   rejectRepair,
-  getAssessorStatistics
+  getAssessorStatistics,
+  getTopAssessors
 };
