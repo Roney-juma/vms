@@ -439,12 +439,85 @@ const countClaimsByStatus = async () => {
     _id: status,
     count: countsMap.get(status) || 0
   }));
-  // the result should be an object of key values
   return result.reduce((acc, curr) => {
     acc[curr._id] = curr.count;
     return acc;
     }, {});
 };
+const getPaymentTotals = async () => {
+  const result = await Claim.aggregate([
+    // Unwind the bids array to process each bid
+    { $unwind: { path: '$bids', preserveNullAndEmptyArrays: true } },
+    // Match only awarded garage bids
+    {
+      $match: {
+        'bids.bidderType': 'garage',
+        'bids.status': 'awarded',
+      },
+    },
+    // Calculate the total cost of parts in awarded garage bids
+    {
+      $group: {
+        _id: '$_id', // Group by claim ID
+        totalGaragePayments: {
+          $sum: { $sum: '$bids.parts.cost' }, // Sum the costs of parts in awarded garage bids
+        },
+        totalAssessorPayments: { $first: '$awardedAssessor.awardedAmount' },
+        supplierBids: { $first: '$supplierBids' }, // Include supplierBids for lookup
+      },
+    },
+    // Lookup supplier bids from the SupplierBids collection
+    {
+      $lookup: {
+        from: 'supplybids', 
+        localField: 'supplierBids', // Field in the Claim collection
+        foreignField: '_id', // Field in the SupplierBids collection
+        as: 'supplierBidsDetails', // Name of the array field to store the matched supplier bids
+      },
+    },
+    // Unwind the supplierBidsDetails array to process each supplier bid
+    { $unwind: { path: '$supplierBidsDetails', preserveNullAndEmptyArrays: true } },
+    // Match only supplier bids with status 'Accepted'
+    {
+      $match: {
+        'supplierBidsDetails.status': 'Accepted',
+      },
+    },
+    // Group by claim to calculate total supplier payments for each claim
+    {
+      $group: {
+        _id: '$_id', // Group by claim ID
+        totalGaragePayments: { $first: '$totalGaragePayments' },
+        totalAssessorPayments: { $first: '$totalAssessorPayments' },
+        totalSupplierPayments: { $sum: '$supplierBidsDetails.totalCost' }, // Sum the totalCost of accepted supplier bids
+      },
+    },
+    // Group all claims to calculate overall totals
+    {
+      $group: {
+        _id: null, // Group all claims together
+        totalGaragePayments: { $sum: '$totalGaragePayments' },
+        totalAssessorPayments: { $sum: '$totalAssessorPayments' }, 
+        totalSupplierPayments: { $sum: '$totalSupplierPayments' },
+        totalAssessedClaims: { $sum: 1 }, 
+        totalPaid: { $sum: { $add: ['$totalGaragePayments', '$totalAssessorPayments', '$totalSupplierPayments'] }},
+      },
+    },
+    // Project the final result
+    {
+      $project: {
+        _id: 0, // Exclude the _id field
+        totalGaragePayments: 1,
+        totalAssessorPayments: 1,
+        totalSupplierPayments: 1,
+        totalAssessedClaims: 1,
+        totalPaid: 1,
+      },
+    },
+  ]);
+  return result.length > 0 ? result[0] : {};
+};
+
 
 
 module.exports = {
@@ -468,5 +541,7 @@ module.exports = {
   getSupplierBidsForClaim,
   acceptSupplierBid,
   updateClaim,
-  countClaimsByStatus
+  countClaimsByStatus,
+  getPaymentTotals,
+  
 };

@@ -231,6 +231,17 @@ const countClaimsByStatus = async (req, res) => {
   }
 }
 
+const getClaimsTotalCost = async (req, res) => {
+  try {
+    const totalCost = await claimService.getPaymentTotals();
+    res.status(200).json(totalCost);
+  }
+  catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+
 module.exports = {
   generateClaimLinkController,
   fileClaim,
@@ -252,5 +263,7 @@ module.exports = {
   getSupplierBidsForClaim,
   acceptSupplierBid,
   updateClaimById,
-  countClaimsByStatus
+  countClaimsByStatus,
+  getClaimsTotalCost
+  
 };
