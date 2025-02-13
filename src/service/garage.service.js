@@ -350,6 +350,8 @@ const getTopGarages = async () => {
     {
       $project: {
         name: 1,
+        pendingWork: 1,
+        'ratings.averageRating': 1,
         totalClaimsRepaired: { $size: '$claims' },
       },
     },
