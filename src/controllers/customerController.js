@@ -79,6 +79,15 @@ const getCustomerStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const getGarage = async (req, res) => {
+  try {
+    const garage = await customerService.findGarages(req.params.claimId);
+    res.status(200).json(garage);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+      }
+  };
+
 
 module.exports = {
   createCustomer,
@@ -87,5 +96,6 @@ module.exports = {
   getCustomerClaims,
   resetPassword,
   updateCustomer,
-  getCustomerStats
+  getCustomerStats,
+  getGarage
 };
