@@ -223,40 +223,59 @@ const getClaimById = async (id) => {
 
 // Award Bid to Assessor
 const awardClaim = async (id, bidId) => {
+  // Find the claim by ID
   const claim = await Claim.findById(id);
   if (!claim) throw new Error('Claim not found');
+
+  // Find the specific bid by bidId
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
 
+  // Mark the specific bid as awarded
   bid.status = 'awarded';
-  // Mark claim status as Assessment
+
+  // Update claim status to 'Assessment'
   claim.status = 'Assessment';
+
+  // Store awarded assessor details
   claim.awardedAssessor = {
     assessorId: bid.assessorId,
     awardedAmount: bid.amount,
     awardedDate: Date.now(),
   };
+
+  // Mark all other assessor bids as rejected
   claim.bids.forEach(otherBid => {
-    if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'assessor') {
+    if (
+      otherBid._id.toString() !== bidId && // Exclude the awarded bid
+      otherBid.bidderType === 'assessor' && // Only assessor bids
+      otherBid.status === 'pending' // Only pending bids
+    ) {
       otherBid.status = 'rejected';
     }
   });
 
+  // Send notification to the awarded assessor
   await Notification.create({
     recipientId: bid.assessorId,
     recipientType: 'assessor',
-    content: `Your bid for claim ID: ${claim._id} has been awarded.`
+    content: `Your bid for claim ID: ${claim._id} has been awarded.`,
   });
 
+  // Save the updated claim
   await claim.save();
 
+  // Fetch the awarded assessor's details
   const assessor = await Assessor.findById(bid.assessorId);
   if (assessor && assessor.email) {
+    // Send email notification to the awarded assessor
     await emailService.sendEmailNotification(
       assessor.email,
       'Claim Award Notification',
       `Dear ${assessor.name},\n\nCongratulations! You have been awarded the claim with ID: ${claim.vehiclesInvolved[0].licensePlate}. You are required to submit a report within 3 days.\n\nPlease ensure that the report is submitted on time to facilitate the next steps in the claims process.\n\nBest Regards,\nAdmin Team`
     );
+
+    // Send email notification to the claimant
     if (claim.claimant && claim.claimant.email) {
       await emailService.sendEmailNotification(
         claim.claimant.email,
@@ -265,6 +284,7 @@ const awardClaim = async (id, bidId) => {
       );
     }
   }
+
   return claim;
 };
 
