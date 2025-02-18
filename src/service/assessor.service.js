@@ -14,9 +14,14 @@ const createAssessor = async (assessorData, userId) => {
 
   assessorData.password = await bcrypt.hash(assessorData.password, 10);
   const newAssessor = await Assessor.create(assessorData);
-
-  // Log the creation
-  await logAudit('CREATE', 'Assessor', newAssessor._id, { newData: assessorData }, userId);
+  const audit = new logAudit({
+    userId: userId,
+    action: "Created Assessor",
+    collectionName: "Assessor",
+    documentId: newAssessor._id,
+    changes: { old: null, new: assessorData }
+    });
+    await audit.save();
 
   return newAssessor;
 };
@@ -31,13 +36,20 @@ const getAssessorById = async (id) => {
 };
 
 const updateAssessor = async (id, assessorData, userId) => {
+  console.log("Ids",id, assessorData, userId )
   const assessor = await Assessor.findById(id);
   if (!assessor) throw new ApiError(404, 'Assessor not found');
 
-  const oldData = { ...assessor.toObject() }; // Capture old data
+  const oldData = { ...assessor.toObject() };
   const updatedAssessor = await Assessor.findByIdAndUpdate(id, assessorData, { new: true });
-
-  await logAudit('UPDATED', 'Assessor', updatedAssessor._id, { oldData, newData: assessorData }, userId);
+  const audit = new logAudit({
+    action: "UPDATED",
+    collectionName: "Assessor",
+    documentId: updatedAssessor._id,
+    changes: { old: oldData, new: assessorData },
+    userId: userId
+    });
+    await audit.save();
 
   return updatedAssessor;
 };

@@ -16,7 +16,7 @@ const login = async (req, res) => {
 const createAssessor = async (req, res) => {
   try {
     const assessorData = req.body;
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id;
     const newAssessor = await assessorService.createAssessor(assessorData, userId);
 
     // Send email notification
@@ -52,7 +52,8 @@ const getAssessorById = async (req, res) => {
 
 const updateAssessor = async (req, res) => {
   try {
-    const userId = req.user._id; // Extract userId from authenticated user
+    console.log("here we go 2")
+    const userId = req.user._id || req.user.id; 
     const updatedAssessor = await assessorService.updateAssessor(req.params.id, req.body, userId);
     res.status(200).json(updatedAssessor);
   } catch (error) {
@@ -62,7 +63,7 @@ const updateAssessor = async (req, res) => {
 
 const deleteAssessor = async (req, res) => {
   try {
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id
     await assessorService.deleteAssessor(req.params.id, userId);
     res.status(200).json({ message: 'Assessor deleted successfully' });
   } catch (error) {
@@ -84,7 +85,7 @@ const placeBid = async (req, res) => {
   const { assessorId, amount, description, timeline } = req.body;
 
   try {
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id; // Extract userId from authenticated user
     const bid = await assessorService.placeBid(claimId, assessorId, amount, description, timeline, userId);
     res.status(201).json({
       message: 'Bid placed successfully',
@@ -107,7 +108,7 @@ const getAssessorBids = async (req, res) => {
 
 const submitAssessmentReport = async (req, res) => {
   try {
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id
     const claim = await assessorService.submitAssessmentReport(req.params.claimId, req.body.assessmentReport, userId);
     res.status(200).json({ message: 'Assessment report submitted successfully', claim });
   } catch (error) {
@@ -118,7 +119,7 @@ const submitAssessmentReport = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id
     const response = await assessorService.resetPassword(email, newPassword, userId);
     res.status(200).json(response);
   } catch (err) {
@@ -128,7 +129,7 @@ const resetPassword = async (req, res) => {
 
 const completeReAssessment = async (req, res) => {
   try {
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id; // Extract userId from authenticated user
     const claim = await assessorService.completeRepair(req.params.id, userId);
     res.status(200).json(claim);
   } catch (error) {
@@ -140,7 +141,7 @@ const completeReAssessment = async (req, res) => {
 const rejectReAssessment = async (req, res) => {
   try {
     const rejectionReason = req.body.rejectionReason;
-    const userId = req.user._id; // Extract userId from authenticated user
+    const userId = req.user._id || req.user.id; // Extract userId from authenticated user
     const claim = await assessorService.rejectRepair(req.params.id, rejectionReason, userId);
     res.status(200).json(claim);
   } catch (error) {
