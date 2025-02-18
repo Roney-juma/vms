@@ -16,7 +16,8 @@ const login = async (req, res) => {
 const createAssessor = async (req, res) => {
   try {
     const assessorData = req.body;
-    const newAssessor = await assessorService.createAssessor(assessorData);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const newAssessor = await assessorService.createAssessor(assessorData, userId);
 
     // Send email notification
     await emailService.sendEmailNotification(
@@ -51,7 +52,8 @@ const getAssessorById = async (req, res) => {
 
 const updateAssessor = async (req, res) => {
   try {
-    const updatedAssessor = await assessorService.updateAssessor(req.params.id, req.body);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const updatedAssessor = await assessorService.updateAssessor(req.params.id, req.body, userId);
     res.status(200).json(updatedAssessor);
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -60,7 +62,8 @@ const updateAssessor = async (req, res) => {
 
 const deleteAssessor = async (req, res) => {
   try {
-    await assessorService.deleteAssessor(req.params.id);
+    const userId = req.user._id; // Extract userId from authenticated user
+    await assessorService.deleteAssessor(req.params.id, userId);
     res.status(200).json({ message: 'Assessor deleted successfully' });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
@@ -81,7 +84,8 @@ const placeBid = async (req, res) => {
   const { assessorId, amount, description, timeline } = req.body;
 
   try {
-    const bid = await assessorService.placeBid(claimId, assessorId, amount, description, timeline);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const bid = await assessorService.placeBid(claimId, assessorId, amount, description, timeline, userId);
     res.status(201).json({
       message: 'Bid placed successfully',
       bid,
@@ -91,7 +95,6 @@ const placeBid = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 const getAssessorBids = async (req, res) => {
   try {
@@ -104,34 +107,41 @@ const getAssessorBids = async (req, res) => {
 
 const submitAssessmentReport = async (req, res) => {
   try {
-    const claim = await assessorService.submitAssessmentReport(req.params.claimId, req.body.assessmentReport);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const claim = await assessorService.submitAssessmentReport(req.params.claimId, req.body.assessmentReport, userId);
     res.status(200).json({ message: 'Assessment report submitted successfully', claim });
   } catch (error) {
     res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
+
 const resetPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
-    const response = await assessorService.resetPassword(email, newPassword);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const response = await assessorService.resetPassword(email, newPassword, userId);
     res.status(200).json(response);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
 const completeReAssessment = async (req, res) => {
   try {
-    const claim = await assessorService.completeRepair(req.params.id);
+    const userId = req.user._id; // Extract userId from authenticated user
+    const claim = await assessorService.completeRepair(req.params.id, userId);
     res.status(200).json(claim);
   } catch (error) {
     console.error('Error completing repair:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
+
 const rejectReAssessment = async (req, res) => {
   try {
-    const rejectionReason = req.body.rejectionReason
-    const claim = await assessorService.rejectRepair(req.params.id, rejectionReason);
+    const rejectionReason = req.body.rejectionReason;
+    const userId = req.user._id; // Extract userId from authenticated user
+    const claim = await assessorService.rejectRepair(req.params.id, rejectionReason, userId);
     res.status(200).json(claim);
   } catch (error) {
     console.error('Error completing repair:', error.message);
@@ -147,7 +157,7 @@ const getAssessorStatistics = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// Top 5 Assessors with the highest number of claims
+
 const getTopAssessors = async (req, res) => {
   try {
     const topAssessors = await assessorService.getTopAssessors();
@@ -156,7 +166,6 @@ const getTopAssessors = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 module.exports = {
   login,
