@@ -117,7 +117,6 @@ const createClaim = async (data) => {
   }
 };
 
-// Get all claims
 const getClaims = async () => {
   const claims = await Claim.find().sort({ createdAt: -1 });
 
@@ -126,43 +125,39 @@ const getClaims = async () => {
     if (claim.bids.length >= 3 && claim.status === 'Approved') {
       const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
       if (assessorBids.length === 0) continue;
-    
+
       let topRatedBid = null;
       let highestRating = -1;
-    
-      assessorBids.forEach(bid => {
+
+      // Find the top-rated assessor bid
+      for (let bid of assessorBids) {
         if (bid.assessorDetails && bid.assessorDetails.ratings.averageRating > highestRating) {
           highestRating = bid.assessorDetails.ratings.averageRating;
           topRatedBid = bid; // Update the top-rated bid
-        } else if (
-          bid.assessorDetails &&
-          bid.assessorDetails.ratings.averageRating === highestRating
-        ) {
-          // If ratings are equal, keep the current top-rated bid (first encountered one)
-          return;
         }
-      });
-    
+      }
+
+      // Award the top-rated assessor bid if found
       if (topRatedBid) {
         await awardClaim(claim._id, topRatedBid._id);
       }
     }
-    
 
     // Check if the claim status is 'Garage' and has at least 3 garage bids
-    const garageBids = claim.bids.filter(bid => bid.bidderType === 'garage');
-    if (claim.status === 'Garage' && garageBids >= 3) {
-
+    if (claim.status === 'Garage' && claim.bids.length >= 3) {
+      const garageBids = claim.bids.filter(bid => bid.bidderType === 'garage');
       if (garageBids.length === 0) continue;
+
       let topRatedGarageBid = null;
       let highestGarageRating = -1;
 
-      garageBids.forEach(bid => {
+      // Find the top-rated garage bid
+      for (let bid of garageBids) {
         if (bid.garageDetails && bid.garageDetails.ratings.averageRating > highestGarageRating) {
           highestGarageRating = bid.garageDetails.ratings.averageRating;
           topRatedGarageBid = bid;
         }
-      });
+      }
 
       // Award the top-rated garage bid if found
       if (topRatedGarageBid) {
@@ -228,40 +223,59 @@ const getClaimById = async (id) => {
 
 // Award Bid to Assessor
 const awardClaim = async (id, bidId) => {
+  // Find the claim by ID
   const claim = await Claim.findById(id);
   if (!claim) throw new Error('Claim not found');
+
+  // Find the specific bid by bidId
   const bid = claim.bids.id(bidId);
   if (!bid || bid.status !== 'pending') throw new Error('Invalid bid');
 
+  // Mark the specific bid as awarded
   bid.status = 'awarded';
-  // Mark claim status as Assessment
+
+  // Update claim status to 'Assessment'
   claim.status = 'Assessment';
+
+  // Store awarded assessor details
   claim.awardedAssessor = {
     assessorId: bid.assessorId,
     awardedAmount: bid.amount,
     awardedDate: Date.now(),
   };
+
+  // Mark all other assessor bids as rejected
   claim.bids.forEach(otherBid => {
-    if (otherBid._id.toString() !== bidId && otherBid.bidderType === 'assessor') {
+    if (
+      otherBid._id.toString() !== bidId && // Exclude the awarded bid
+      otherBid.bidderType === 'assessor' && // Only assessor bids
+      otherBid.status === 'pending' // Only pending bids
+    ) {
       otherBid.status = 'rejected';
     }
   });
 
+  // Send notification to the awarded assessor
   await Notification.create({
     recipientId: bid.assessorId,
     recipientType: 'assessor',
-    content: `Your bid for claim ID: ${claim._id} has been awarded.`
+    content: `Your bid for claim ID: ${claim._id} has been awarded.`,
   });
 
+  // Save the updated claim
   await claim.save();
 
+  // Fetch the awarded assessor's details
   const assessor = await Assessor.findById(bid.assessorId);
   if (assessor && assessor.email) {
+    // Send email notification to the awarded assessor
     await emailService.sendEmailNotification(
       assessor.email,
       'Claim Award Notification',
       `Dear ${assessor.name},\n\nCongratulations! You have been awarded the claim with ID: ${claim.vehiclesInvolved[0].licensePlate}. You are required to submit a report within 3 days.\n\nPlease ensure that the report is submitted on time to facilitate the next steps in the claims process.\n\nBest Regards,\nAdmin Team`
     );
+
+    // Send email notification to the claimant
     if (claim.claimant && claim.claimant.email) {
       await emailService.sendEmailNotification(
         claim.claimant.email,
@@ -270,6 +284,7 @@ const awardClaim = async (id, bidId) => {
       );
     }
   }
+
   return claim;
 };
 
@@ -349,7 +364,7 @@ const getAwardedClaims = async () => {
 const updateClaim = async (id, updateData) => {
   updateData.status = 'Repair';
   updateData.awardedGarage.awardedAmount = 0,
-  updateData.awardedGarage.awardedDate = Date.now()
+    updateData.awardedGarage.awardedDate = Date.now()
   updateData.awardedGarage.bidId = "selected-garage"
 
   const garage = await Garage.findById(updateData.awardedGarage.garageId);
@@ -442,7 +457,7 @@ const countClaimsByStatus = async () => {
   return result.reduce((acc, curr) => {
     acc[curr._id] = curr.count;
     return acc;
-    }, {});
+  }, {});
 };
 const getPaymentTotals = async () => {
   const result = await Claim.aggregate([
@@ -469,7 +484,7 @@ const getPaymentTotals = async () => {
     // Lookup supplier bids from the SupplierBids collection
     {
       $lookup: {
-        from: 'supplybids', 
+        from: 'supplybids',
         localField: 'supplierBids', // Field in the Claim collection
         foreignField: '_id', // Field in the SupplierBids collection
         as: 'supplierBidsDetails', // Name of the array field to store the matched supplier bids
@@ -497,10 +512,10 @@ const getPaymentTotals = async () => {
       $group: {
         _id: null, // Group all claims together
         totalGaragePayments: { $sum: '$totalGaragePayments' },
-        totalAssessorPayments: { $sum: '$totalAssessorPayments' }, 
+        totalAssessorPayments: { $sum: '$totalAssessorPayments' },
         totalSupplierPayments: { $sum: '$totalSupplierPayments' },
-        totalAssessedClaims: { $sum: 1 }, 
-        totalPaid: { $sum: { $add: ['$totalGaragePayments', '$totalAssessorPayments', '$totalSupplierPayments'] }},
+        totalAssessedClaims: { $sum: 1 },
+        totalPaid: { $sum: { $add: ['$totalGaragePayments', '$totalAssessorPayments', '$totalSupplierPayments'] } },
       },
     },
     // Project the final result
@@ -543,5 +558,5 @@ module.exports = {
   updateClaim,
   countClaimsByStatus,
   getPaymentTotals,
-  
+
 };
