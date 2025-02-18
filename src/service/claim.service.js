@@ -126,6 +126,14 @@ const getClaims = async () => {
       const assessorBids = claim.bids.filter(bid => bid.bidderType === 'assessor');
       if (assessorBids.length === 0) continue;
 
+      // Check if all assessor bids are pending and none have been awarded
+      const hasAwardedBid = assessorBids.some(bid => bid.status === 'awarded');
+      const allPending = assessorBids.every(bid => bid.status === 'pending');
+
+      if (hasAwardedBid || !allPending) {
+        continue; // Skip this claim if any bid is already awarded or not all are pending
+      }
+
       let topRatedBid = null;
       let highestRating = -1;
 
@@ -147,6 +155,14 @@ const getClaims = async () => {
     if (claim.status === 'Garage' && claim.bids.length >= 3) {
       const garageBids = claim.bids.filter(bid => bid.bidderType === 'garage');
       if (garageBids.length === 0) continue;
+
+      // Check if all garage bids are pending and none have been awarded
+      const hasAwardedGarageBid = garageBids.some(bid => bid.status === 'awarded');
+      const allGaragePending = garageBids.every(bid => bid.status === 'pending');
+
+      if (hasAwardedGarageBid || !allGaragePending) {
+        continue; // Skip this claim if any garage bid is already awarded or not all are pending
+      }
 
       let topRatedGarageBid = null;
       let highestGarageRating = -1;
@@ -247,8 +263,8 @@ const awardClaim = async (id, bidId) => {
   // Mark all other assessor bids as rejected
   claim.bids.forEach(otherBid => {
     if (
-      otherBid._id.toString() !== bidId && // Exclude the awarded bid
       otherBid.bidderType === 'assessor' && // Only assessor bids
+      otherBid._id.toString() !== bidId && // Exclude the awarded bid
       otherBid.status === 'pending' // Only pending bids
     ) {
       otherBid.status = 'rejected';
