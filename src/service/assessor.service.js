@@ -61,7 +61,14 @@ const deleteAssessor = async (id, userId) => {
   const deletedAssessor = await Assessor.findByIdAndDelete(id);
 
   // Log the deletion
-  await logAudit('DELETE', 'Assessor', deletedAssessor._id, { deletedData: assessor.toObject() }, userId);
+  const audit = new logAudit({
+    action: "DELETED",
+    collectionName: "Assessor",
+    documentId: deletedAssessor._id,
+    changes: {  new:  assessor.toObject() },
+    userId: userId
+    });
+    await audit.save();
 
   return deletedAssessor;
 };
@@ -163,8 +170,14 @@ const placeBid = async (claimId, assessorId, amount, description, timeline, user
 
   await claim.save();
 
-  // Log the bid placement
-  await logAudit('CREATE', 'Bid', newBid._id, { bidData: newBid }, userId);
+  const audit = new logAudit({
+    action: "CREATE",
+    collectionName: "Bid",
+    documentId: newBid._id,
+    changes: {  new:  newBid },
+    userId: userId
+    });
+    await audit.save();
 
   return {
     amount,
@@ -215,8 +228,14 @@ const submitAssessmentReport = async (claimId, assessmentReport, userId) => {
   claim.status = 'Assessed';
   await claim.save();
 
-  // Log the assessment report submission
-  await logAudit('UPDATE', 'Claim', claim._id, { action: 'Assessment Report Submitted' }, userId);
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new: 'Assessment Report Submitted' },
+    userId: userId
+    });
+    await audit.save();
 
   return claim;
 };
@@ -229,7 +248,14 @@ const resetPassword = async (email, newPassword, userId) => {
   user.password = hashedPassword;
 
   // Log the password reset
-  await logAudit('UPDATED', 'Assessor', user._id, { action: 'Password Reset' }, userId);
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Assessor",
+    documentId: user._id,
+    changes: {  new: 'Password Reset' },
+    userId: userId
+    });
+    await audit.save();
 
   await user.save();
   return { message: 'Password has been reset successfully' };
@@ -245,7 +271,14 @@ const completeRepair = async (claimId, userId) => {
   await claim.save();
 
   // Log the repair completion
-  await logAudit('UPDATE', 'Claim', claim._id, { action: 'Repair Completed' }, userId);
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new: 'Repair Completed' },
+    userId: userId
+    });
+    await audit.save();
 
   // Get garage and reduce their pending repairs
   const garage = await Garage.findById(claim.awardedGarage.garageId);
@@ -279,7 +312,14 @@ const rejectRepair = async (claimId, rejectionReason, userId) => {
   await claim.save();
 
   // Log the repair rejection
-  await logAudit('UPDATE', 'Claim', claim._id, { action: 'Repair Rejected', rejectionReason }, userId);
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new: 'Rejected Repair' },
+    userId: userId
+    });
+    await audit.save();
 
   return claim;
 };
