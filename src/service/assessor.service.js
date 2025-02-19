@@ -172,8 +172,8 @@ const placeBid = async (claimId, assessorId, amount, description, timeline, user
 
   const audit = new logAudit({
     action: "CREATE",
-    collectionName: "Bid",
-    documentId: newBid._id,
+    collectionName: "Claim Bids",
+    documentId: claimId,
     changes: {  new:  newBid },
     userId: userId
     });

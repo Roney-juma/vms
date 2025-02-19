@@ -16,6 +16,10 @@ const imageUpload = async (req, res) => {
         const s3 = new AWS.S3({ httpOptions: { timeout: 60000000 } });
 
         const files = req.files;
+        // If file not array, convert to array
+        if (!Array.isArray(files)) {
+            files = [files];
+            }
         if (!files || files.length === 0) {
             return res.status(400).json({ message: 'No files uploaded' });
         }
