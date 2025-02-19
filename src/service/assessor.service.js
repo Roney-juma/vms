@@ -36,7 +36,7 @@ const getAssessorById = async (id) => {
 };
 
 const updateAssessor = async (id, assessorData, userId) => {
-  console.log("Ids",id, assessorData, userId )
+  
   const assessor = await Assessor.findById(id);
   if (!assessor) throw new ApiError(404, 'Assessor not found');
 
