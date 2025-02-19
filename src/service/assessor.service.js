@@ -207,6 +207,7 @@ const getAssessorBids = async (assessorId) => {
         status: bid.status,
         bidDate: bid.bidDate,
         claimStatus: claim.status,
+        vehicleType: claim.vehiclesInvolved?.[0] || 'Unknown'
       });
     });
   }
