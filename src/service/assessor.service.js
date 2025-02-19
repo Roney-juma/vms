@@ -308,6 +308,17 @@ const rejectRepair = async (claimId, rejectionReason, userId) => {
   if (claim.status !== 'Re-Assessment') throw new Error('Claim must be under Re-Assessment to mark it as Rejected');
 
   claim.status = 'Repair';
+  const garage = await Garage.findById(claim.awardedGarage.garageId);
+  await emailService.sendEmailNotification(
+    garage.email,
+    'Repair Rejected ',
+    `Dear ${garage.name},
+    Your repair for claim with ID: ${claim.vehiclesInvolved[0].licensePlate} has been rejected due to ${rejectionReason}. Please contact the Assessor to discuss further.
+    Thank you for your cooperation.
+    Best Regards,
+    Admin Team`
+    );
+
   claim.rejectionReason = rejectionReason;
   await claim.save();
 
