@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*" }));
-app.use("/v2", router);
+app.use("/", router);
  
 app.get("/v1", (req, res) => {
   res.send("Acha niseme initoke: Africa the Land We Love.");
