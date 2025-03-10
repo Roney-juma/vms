@@ -38,7 +38,7 @@ const imageUpload = async (req, res) => {
         });
     } catch (error) {
         console.error('Server error: ', error);
-        return res.status(500).json({ message: 'Server side error' });
+        return res.status(500).json({ message: 'Server side error', error: error });
     }
 };
 
