@@ -236,21 +236,31 @@ const approveClaim = async (id,userId) => {
 };
 
 // Delete a claim
-const deleteClaim = async (id,userId) => {
-  const claim = await Claim.findById(id);
-  if (!claim) {
-    throw new Error('Claim not found');
-  }
-  const audit = new logAudit({
-    action: "DELETE",
-    collectionName: "Claim",
-    documentId: claim._id,
-    changes: {  new:  {}, old: claim },
-    userId: userId
+const deleteClaim = async (id, userId) => {
+  try {
+    const claim = await Claim.findById(id);
+    if (!claim) {
+      throw new Error('Claim not found');
+    }
+
+    // Create an audit log before deleting the claim
+    const audit = new logAudit({
+      action: "DELETE",
+      collectionName: "Claim",
+      documentId: claim._id,
+      changes: { new: {}, old: claim },
+      userId: userId
     });
-    await audit.save();
-    await claim.remove(); 
-    return claim;
+
+    await audit.save(); // Save the audit log first
+
+    await claim.deleteOne(); // Use deleteOne instead of remove
+
+    return claim; // Return the deleted claim
+  } catch (error) {
+    console.error('Error deleting claim:', error);
+    throw error; // Re-throw the error to handle it in the calling function
+  }
 };
 
 // Reject a claim
