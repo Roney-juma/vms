@@ -74,7 +74,7 @@ const getClaimsByCustomer = async (req, res) => {
 // Approve a claim
 const approveClaim = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const claim = await claimService.approveClaim(req.params.id, userId);
     res.status(200).json(claim);
   } catch (error) {
@@ -85,7 +85,7 @@ const approveClaim = async (req, res) => {
 // Delete a claim
 const deleteClaim = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const claim = await claimService.deleteClaim(req.params.id, userId);
     res.status(200).json({ message: 'Claim deleted successfully' });
   } catch (error) {
@@ -116,7 +116,7 @@ const getClaimById = async (req, res) => {
 // Award a claim to an assessor
 const awardClaim = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const claim = await claimService.awardClaim(req.params.id, req.body.bidId, userId);
     res.status(200).json(claim);
   } catch (error) {
@@ -127,7 +127,7 @@ const awardClaim = async (req, res) => {
 // Award a bid to a garage
 const awardBidToGarage = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const claim = await claimService.awardBidToGarage(req.params.id, req.body.bidId, userId);
     res.status(200).json(claim);
   } catch (error) {
@@ -208,7 +208,7 @@ const getSupplierBidsForClaim = async (req, res) => {
 // Accept a supplier bid
 const acceptSupplierBid = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const bid = await claimService.acceptSupplierBid(req.params.claimId, req.params.bidId, userId);
     res.status(200).json(bid);
   } catch (error) {
