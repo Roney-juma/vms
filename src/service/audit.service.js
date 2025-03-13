@@ -1,4 +1,4 @@
-const {AuditLog} = require('../models');
+const { AuditLog } = require('../models');
 
 module.exports.getAuditLogs = async (filters = {}, options = {}) => {
   try {
@@ -17,7 +17,6 @@ module.exports.getAuditLogs = async (filters = {}, options = {}) => {
       limit = 10,
       sortBy = 'timestamp',
       sortOrder = 'desc',
-      populateUser = false,
     } = options;
 
     // Build the query
@@ -34,6 +33,8 @@ module.exports.getAuditLogs = async (filters = {}, options = {}) => {
       if (startDate) query.timestamp.$gte = new Date(startDate);
       if (endDate) query.timestamp.$lte = new Date(endDate);
     }
+
+    // Search filtering
     if (search) {
       query.$or = [
         { documentId: { $regex: search, $options: 'i' } },
@@ -41,8 +42,12 @@ module.exports.getAuditLogs = async (filters = {}, options = {}) => {
         { 'changes.oldData': { $regex: search, $options: 'i' } },
       ];
     }
+
+    // Sort options
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Pagination
     const skip = (page - 1) * limit;
 
     // Fetch audit logs
@@ -50,9 +55,7 @@ module.exports.getAuditLogs = async (filters = {}, options = {}) => {
       .sort(sortOptions)
       .skip(skip)
       .limit(limit);
-    if (populateUser) {
-      auditLogsQuery = auditLogsQuery.populate('userId', 'name email');
-    }
+    auditLogsQuery = auditLogsQuery.populate('userId', 'fullName email');
 
     const auditLogs = await auditLogsQuery.exec();
     const totalLogs = await AuditLog.countDocuments(query);
