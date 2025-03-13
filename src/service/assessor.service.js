@@ -16,7 +16,7 @@ const createAssessor = async (assessorData, userId) => {
   const newAssessor = await Assessor.create(assessorData);
   const audit = new logAudit({
     userId: userId,
-    action: "Created Assessor",
+    action: "CREATE",
     collectionName: "Assessor",
     documentId: newAssessor._id,
     changes: { old: null, new: assessorData }
@@ -43,7 +43,7 @@ const updateAssessor = async (id, assessorData, userId) => {
   const oldData = { ...assessor.toObject() };
   const updatedAssessor = await Assessor.findByIdAndUpdate(id, assessorData, { new: true });
   const audit = new logAudit({
-    action: "UPDATED",
+    action: "UPDATE",
     collectionName: "Assessor",
     documentId: updatedAssessor._id,
     changes: { old: oldData, new: assessorData },
@@ -62,7 +62,7 @@ const deleteAssessor = async (id, userId) => {
 
   // Log the deletion
   const audit = new logAudit({
-    action: "DELETED",
+    action: "DELETE",
     collectionName: "Assessor",
     documentId: deletedAssessor._id,
     changes: {  new:  assessor.toObject() },
@@ -172,7 +172,7 @@ const placeBid = async (claimId, assessorId, amount, description, timeline, user
 
   const audit = new logAudit({
     action: "CREATE",
-    collectionName: "Claim Bids",
+    collectionName: "Claim",
     documentId: claimId,
     changes: {  new:  newBid },
     userId: userId

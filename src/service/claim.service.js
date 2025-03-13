@@ -1,6 +1,7 @@
 const Claim = require('../models/claim.model');
 const Customer = require('../models/customerModel');
 const Assessor = require('../models/assessor.model');
+const logAudit = require('../models/audit.model')
 const Garage = require('../models/garage.model');
 const SupplyBid = require('../models/supplyBids.model');
 const Notification = require('../models/notification.model');
@@ -69,6 +70,14 @@ const fileClaimService = async (token, claimDetails) => {
       },
       ...claimDetails,
     });
+    const audit = new logAudit({
+      action: "CREATE",
+      collectionName: "Claim",
+      documentId: newClaim._id,
+      changes: {  new:  newClaim, old: {} },
+      userId: customer._id
+      });
+      await audit.save();
     await newClaim.save();
     if (newClaim.claimant.email) {
       await emailService.sendEmailNotification(
@@ -111,6 +120,14 @@ const createClaim = async (data) => {
         `Dear ${claimant.name},\n\nYour claim has been successfully submitted and is now being processed. Our team will review your claim and get back to you shortly.\n\nThank you for choosing Ave Insurance.\n\nBest Regards,\nAdmin Team`
       );
     }
+    const audit = new logAudit({
+      action: "CREATE",
+      collectionName: "Claim",
+      documentId: claim._id,
+      changes: {  new:  claim, old: {} },
+      userId: data.customerId
+      });
+      await audit.save();
     return claim;
   } catch (error) {
     return error.message;
@@ -194,11 +211,19 @@ const getClaimsByCustomer = async (customerId) => {
 };
 
 // Approve a claim
-const approveClaim = async (id) => {
+const approveClaim = async (id,userId) => {
   const claim = await Claim.findByIdAndUpdate(id, { status: 'Approved' }, { new: true });
   if (!claim) {
     throw new Error('Claim not found');
   }
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new:  claim, old: {} },
+    userId: userId
+    });
+    await audit.save();
   const claimant = claim.claimant;
   if (claimant && claimant.email) {
     await emailService.sendEmailNotification(
@@ -211,8 +236,21 @@ const approveClaim = async (id) => {
 };
 
 // Delete a claim
-const deleteClaim = async (id) => {
-  return await Claim.findByIdAndDelete(id);
+const deleteClaim = async (id,userId) => {
+  const claim = await Claim.findById(id);
+  if (!claim) {
+    throw new Error('Claim not found');
+  }
+  const audit = new logAudit({
+    action: "DELETE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new:  {}, old: claim },
+    userId: userId
+    });
+    await audit.save();
+    await claim.remove(); 
+    return claim;
 };
 
 // Reject a claim
@@ -221,6 +259,7 @@ const rejectClaim = async (id) => {
   if (!claim) {
     throw new Error('Claim not found');
   }
+
   return claim;
 };
 
@@ -238,7 +277,7 @@ const getClaimById = async (id) => {
 };
 
 // Award Bid to Assessor
-const awardClaim = async (id, bidId) => {
+const awardClaim = async (id, bidId,userId) => {
   // Find the claim by ID
   const claim = await Claim.findById(id);
   if (!claim) throw new Error('Claim not found');
@@ -271,12 +310,21 @@ const awardClaim = async (id, bidId) => {
     }
   });
 
+
   // Send notification to the awarded assessor
   await Notification.create({
     recipientId: bid.assessorId,
     recipientType: 'assessor',
     content: `Your bid for claim ID: ${claim._id} has been awarded.`,
   });
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new:  bid, old: {} },
+    userId: userId
+    });
+    await audit.save();
 
   // Save the updated claim
   await claim.save();
@@ -305,7 +353,7 @@ const awardClaim = async (id, bidId) => {
 };
 
 
-const awardBidToGarage = async (id, bidId) => {
+const awardBidToGarage = async (id, bidId,userId) => {
   const claim = await Claim.findById(id)
   if (!claim) throw new Error('Claim not found');
 
@@ -337,6 +385,15 @@ const awardBidToGarage = async (id, bidId) => {
     recipientType: 'garage',
     content: `Your bid for claim ID: ${claim.vehiclesInvolved[0].licensePlate} has been awarded.`,
   });
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "Claim",
+    documentId: claim._id,
+    changes: {  new:  bid, old: {} },
+    userId: userId
+    });
+    await audit.save();
+
 
   await claim.save();
 
@@ -430,7 +487,7 @@ const getSupplierBidsForClaim = async (claimId) => {
 };
 
 // Accept a supplier bid
-const acceptSupplierBid = async (claimId, bidId) => {
+const acceptSupplierBid = async (claimId, bidId,userId) => {
   const supplyBid = await SupplyBid.findById(bidId);
   if (!supplyBid) throw new Error('Supply bid not found');
 
@@ -444,6 +501,14 @@ const acceptSupplierBid = async (claimId, bidId) => {
 
   const claim = await Claim.findById(claimId);
   claim.status = 'Garage';
+  const audit = new logAudit({
+    action: "UPDATE",
+    collectionName: "SupplyBid",
+    documentId: supplyBid._id,
+    changes: {  new:  supplyBid, old: {} },
+    userId: userId
+    });
+    await audit.save();
   await claim.save();
 
   return supplyBid;
