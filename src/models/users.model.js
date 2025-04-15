@@ -21,9 +21,8 @@ const usersSchema = new mongoose.Schema({
         unique: true 
     },
     role: { 
-        type: String, 
-        enum: ['admin', 'user', 'superadmin', 'manager'], 
-        default: 'user' 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Role'
     },
     active: { type: Boolean, default: true },
     lastLogin: { type: Date },
