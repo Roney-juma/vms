@@ -28,8 +28,8 @@ const io = socketIo(server, {
     // Allow requests from any origin
     
     origin: ["*","https://admin.aveafricasolutions.com/"],
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }
 });
 

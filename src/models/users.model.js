@@ -20,10 +20,10 @@ const usersSchema = new mongoose.Schema({
         required: true, 
         unique: true 
     },
-    role: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Role'
-    },
+    // role: { 
+    //     type: mongoose.Schema.Types.ObjectId, 
+    //     ref: 'Role'
+    // },
     active: { type: Boolean, default: true },
     lastLogin: { type: Date },
     profilePictureUrl: { type: String }
