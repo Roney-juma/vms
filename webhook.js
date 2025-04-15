@@ -14,12 +14,8 @@ app.post('/deploy', (req, res) => {
     const hmac = crypto.createHmac('sha256', SECRET);
     const digest = 'sha256=' + hmac.update(JSON.stringify(req.body)).digest('hex');
 
-    // if (signature !== digest) {
-    //     return res.status(403).send('Unauthorized');
-    // }
-
     // Execute deployment script
-    exec('/deploy.sh', (error, stdout, stderr) => {
+    exec('./deploy.sh', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error: ${error.message}`);
             return res.status(500).send('Deployment failed');
