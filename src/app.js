@@ -17,7 +17,7 @@ app.use(cors({ origin: "*" }));
 app.use("/", router);
  
 app.get("/v1", (req, res) => {
-  res.send("Acha niseme initoke: Africa the Land We Love.");
+  res.send("Acha niseme initoke: This is kenya.");
 });
 
 // Create an HTTP server with the Express app
