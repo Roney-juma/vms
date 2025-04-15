@@ -97,6 +97,18 @@ const getRolesByPermission = async (permission) => {
         throw error;
     }
 }
+// Create Bulk Roles
+const createBulkRoles = async (rolesData) => {
+    try {
+        const bulkOps = rolesData.map(role => ({ updateOne: { filter: { name: role.name }, update: { $setOnInsert: role }, upsert: true } }));
+        const result = await role.bulkWrite(bulkOps);
+        return result;
+        } catch (error) {
+        logger.error('Error creating bulk roles:', error);
+        throw error;
+    }
+    }
+
 
 module.exports = {
     createRole,
@@ -107,5 +119,6 @@ module.exports = {
     getRoleByName,
     getRolesByIds,
     getRolesByUserId,
-    getRolesByPermission
+    getRolesByPermission,
+    createBulkRoles
 };

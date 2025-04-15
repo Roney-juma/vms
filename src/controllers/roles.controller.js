@@ -98,6 +98,19 @@ const getRoleByName = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+const createBulkRoles = async (req, res) => {
+    try {
+        const roles = req.body.roles;
+        const createdRoles = await roleService.createBulkRoles(roles);
+        res.status(201).json(createdRoles);
+    }
+    catch (error) {
+        logger.error('Error creating bulk roles:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     createRole,
     getAllRoles,
@@ -107,6 +120,7 @@ module.exports = {
     getRolesByPermission,
     getRolesByIds,
     getRolesByUserId,
-    getRoleByName
+    getRoleByName,
+    createBulkRoles
     };
 

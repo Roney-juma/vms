@@ -27,6 +27,8 @@ router.get('/permissions/:permission', roleController.getRolesByPermission);
 router.get('/ids/:ids', roleController.getRolesByIds);
 // Get roles by user ID
 router.get('/user/:userId', roleController.getRolesByUserId);
+// Create bulk roles
+router.post('/bulk', roleController.createBulkRoles);
 
 // export the router
 module.exports = router;
