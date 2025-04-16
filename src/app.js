@@ -7,17 +7,17 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
 
-const PORT = process.env.PORT || 3306;
+const PORT = process.env.PORT || 3800;
 mongoose.connect(process.env.MONGO_URI).then(() => {
   logger.info('Connected to MongoDB');
 })
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*" }));
-app.use("/", router);
+app.use("/api", router);
  
 app.get("/v1", (req, res) => {
-  res.send("Acha niseme initoke: This is kenya");
+  res.send("Road Rescue");
 });
 
 // Create an HTTP server with the Express app

@@ -3,8 +3,8 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 
 const app = express();
-const PORT = 4000; // Use any available port
-const SECRET = 'mysecrettoken'; // Replace with a secure secret key
+const PORT = 4100;
+const SECRET = 'mysecrettoken';
 
 // Middleware to parse JSON
 app.use(express.json());

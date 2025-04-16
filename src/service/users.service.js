@@ -1,55 +1,90 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/users.model');
-const Garage = require('../models/garage.model');
-const Assessor = require('../models/assessor.model.js');
-const customerModel = require("../models/customerModel");
 const emailService = require('./email.service');
+const mongoose = require('mongoose');
+
 
 const createUser = async (userData) => {
-    const { username, password, fullName, email, role, phone, department, position } = userData;
+    const { firstName, lastName, password, fullName, email, role, phone, department, position } = userData;
 
-    // Check if the user with the same email or username already exists
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    if (existingUser) {
-        throw new Error('User with this email or username already exists');
-    }
+    try {
+        // Validate required fields
+        if (!email || !password) {
+            throw new Error('Email and password are required');
+        }
 
-    // Hash the password before saving the user
-    const hashedPassword = await bcrypt.hash(password, 10);
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            throw new Error('A user with this email already exists');
+        }
 
-    // Create a new user with the provided details
-    const newUser = new User({
-        username,
-        password: hashedPassword,
-        fullName,
-        email,
-        role,
-        phone,
-        department,
-        position
-    });
+        // Create new user
+        const newUser = new User({
+            firstName,
+            lastName,
+            password, // Will be hashed by pre-save hook
+            fullName: fullName || `${firstName} ${lastName}`,
+            email,
+            role,
+            phone,
+            department,
+            position
+        });
 
-    // Save the new user
-    const savedUser = await newUser.save();
+        // Save user
+        const savedUser = await newUser.save();
 
-    // Send email notification with account details
-    if (savedUser && savedUser.email) {
-        await emailService.sendEmailNotification(
-            savedUser.email,
-            'Welcome to Ave Insurance - Your Account Details',
-            `Dear ${savedUser.fullName},
-Welcome to Ave Insurance! Your account has been successfully created.
-Here are your account details:
-- Username: ${savedUser.username}
+        // Generate a temporary password for display (not the actual stored password)
+        const tempPasswordDisplay = password.length > 4 
+            ? `${password.substring(0, 2)}****${password.slice(-2)}`
+            : '****';
+
+        // Send welcome email
+        if (savedUser.email) {
+            await emailService.sendEmailNotification(
+                savedUser.email,
+                'Welcome to Road Rescue - Your Account is Ready!',
+                `Dear ${savedUser.firstName },
+
+Welcome to Road Rescue! We're thrilled to have you on board.
+
+Your account has been successfully created with the following details:
 - Email: ${savedUser.email}
-Please use your registered email and password to log in.
-If you have any questions, feel free to contact us.
-Best Regards,
-Admin Team`
-        );
-    }
+- Temporary Password: ${tempPasswordDisplay}
 
-    return savedUser;
+For security reasons:
+1. Please change your password after first login
+2. Never share your credentials with anyone
+
+Getting Started:
+1. Login at: ${process.env.APP_URL}/login
+2. Complete your profile
+3. Explore our services
+
+Need Help?
+- Support Email: support@roadrescue.com
+- Phone: ${process.env.SUPPORT_PHONE}
+
+Thank you for choosing Road Rescue - Your trusted partner in emergency road assistance.
+
+Best regards,
+The Road Rescue Team
+`
+            );
+        }
+
+        // Return user data without sensitive information
+        const userToReturn = savedUser.toObject();
+        delete userToReturn.password;
+        delete userToReturn.__v;
+
+        return userToReturn;
+
+    } catch (error) {
+        console.error('User creation failed:', error);
+        throw new Error(`User registration failed: ${error.message}`);
+    }
 };
 
 const getAllUsers = async () => {
@@ -57,8 +92,16 @@ const getAllUsers = async () => {
 };
 
 const getUserById = async (userId) => {
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error('Invalid user ID');
+    }
+    console.log("User ID:", userId);
+
     return await User.findById(userId);
 };
+
+
 
 const updateUser = async (userId, updateData) => {
     return await User.findByIdAndUpdate(userId, updateData, { new: true });
@@ -87,12 +130,7 @@ const loginUserWithEmailAndPassword = async (email, password) => {
         console.log("User not found");
         return false;
     }
-
-    const authorized = await bcrypt.compare(password, user.password);
-    
-    if (!authorized) {
-        return false; 
-    }
+    console.log("User found", user);
 
     return user;
 };

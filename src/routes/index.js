@@ -1,31 +1,26 @@
 const express =require("express")
 
-const customer = require("./customer")
-const claims = require("./claim.route")
+const providers = require("./providers.route")
+const emergencies = require("./emergencies.route")
 const users = require("./users.route")
 const auth = require("./auth.route")
 const upload = require("./imageUploads.route")
-const assessors = require("./assesor")
-const garages = require("./garage.route")
-const suppliers = require("./supplier.route")
-const rating = require("./rating.route")
-const audit = require("./audit.route")
+const services = require("./services.route")
+const communications = require("./communications.route")
+const admin = require("./admin.route")
 const roles = require("./roles.route")
 
 
 const router = express.Router()
 
 
-router.use("/customers", customer)
-router.use("/claims", claims)
+router.use("/providers", providers)
+router.use("/emergencies", emergencies)
 router.use("/users", users)
 router.use("/auth", auth)
 router.use("/images", upload)
-router.use("/assessors", assessors)
-router.use("/garages", garages)
-router.use("/suppliers", suppliers)
-router.use("/rating", rating)
-router.use("/audit", audit)
+router.use("/services", services)
+router.use("/communications", communications)
 router.use("/roles", roles)
 
 
