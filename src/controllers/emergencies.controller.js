@@ -5,12 +5,19 @@ const { calculateDistance } = require('../utils/geo');
 // Create new emergency request
 const createEmergency = async (req, res) => {
   try {
-    const { type, coordinates, description } = req.body;
-    const userId = req.user.id;
-    
+    const { type, coordinates, description, serviceSubType, vehicleType } = req.body;
+    const userId = req.user?.id;
+
+    // Basic validation
+    if (!type || !Array.isArray(coordinates) || coordinates.length !== 2) {
+      return res.status(400).json({ error: 'Invalid or missing type or coordinates' });
+    }
+
     const emergency = new Emergency({
       user: userId,
       type,
+      serviceSubType,
+      vehicleType,
       location: {
         type: 'Point',
         coordinates
@@ -18,26 +25,34 @@ const createEmergency = async (req, res) => {
       description,
       status: 'pending'
     });
-    
+
     await emergency.save();
-    
+
     // Find nearby providers
     const providers = await findNearbyProviders(coordinates, type);
-    
-    // Notify providers
-    providers.forEach(provider => {
-      sendNotification(provider.user, {
-        title: 'New Emergency Request',
-        body: `Type: ${type}`,
-        data: { emergencyId: emergency._id }
+
+    // Notify providers if any
+    if (providers.length > 0) {
+      providers.forEach(provider => {
+        sendNotification(provider.user, {
+          title: 'New Emergency Request',
+          body: `Type: ${type}`,
+          data: { emergencyId: emergency._id }
+        });
       });
+    }
+
+    res.status(201).json({
+      message: 'Emergency created successfully',
+      emergency,
+      notifiedProviders: providers.map(p => p._id)
     });
-    
-    res.status(201).json(emergency);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Emergency creation failed:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 };
+
 // Get emergency details
 const getEmergency = async (req, res) => {
   try {

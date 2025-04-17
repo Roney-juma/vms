@@ -4,30 +4,57 @@ const { sendNotification } = require('../service/notification.service');
 // Register as service provider
 const registerProvider = async (req, res) => {
   try {
-    const { serviceType, companyName, contactNumber, coordinates } = req.body;
-    console.log("Here we go")
-    const userId = req.user.id;
+    const {
+      serviceType,
+      serviceSubType,
+      companyName,
+      contactNumber,
+      coordinates
+    } = req.body;
+
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: User not found' });
+    }
+
+    // Validate required fields
+    if (!serviceType || !contactNumber || !coordinates || coordinates.length !== 2) {
+      return res.status(400).json({
+        message: 'Missing or invalid required fields: serviceType, contactNumber, or coordinates'
+      });
+    }
+
     const existingProvider = await Provider.findOne({ user: userId });
     if (existingProvider) {
       return res.status(400).json({ message: 'Provider already registered' });
     }
+
     const newProvider = new Provider({
-      user: userId || '',
+      user: userId,
       serviceType,
+      serviceSubType, // optional but schema will validate it
       companyName,
       contactNumber,
-      location:{
+      location: {
         type: 'Point',
-        coordinates: coordinates
+        coordinates
       }
     });
+
     await newProvider.save();
-    res.status(201).json(newProvider);
+
+    res.status(201).json({
+      message: 'Provider registered successfully',
+      provider: newProvider
+    });
+
+  } catch (err) {
+    console.error('Provider registration failed:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
-  catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+};
+
 // Get provider profile
 const getProviderProfile = async (req, res) => {
   try {
