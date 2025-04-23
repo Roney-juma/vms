@@ -10,7 +10,8 @@ const {
   acceptEmergency,
   getServiceProvidersByServiceType,
   getServiceProvidersByLocation,
-  getNearbyEmergencies
+  getNearbyEmergencies,
+  getAllUserEmergencies,
 } = require('../controllers/emergencies.controller');
 const verifyToken = require("../middlewheres/verifyToken");
 
@@ -41,5 +42,7 @@ router.get('/service-type/:type', getServiceProvidersByServiceType);
 router.get('/location', getServiceProvidersByLocation);
 // Get nearby emergencies
 router.get('/nearby', getNearbyEmergencies);
+// Get all user emergencies
+router.get('/user/history/:id', getAllUserEmergencies);
 
 module.exports = router;

@@ -247,6 +247,20 @@ const getNearbyEmergencies = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
+// Get all user emergencies
+const getAllUserEmergencies = async (req, res) => {
+  try {
+    const user = req.params.id;
+    const userId = req.user?.id;
+    if (userId !== user) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const emergencies = await Emergency.find({ user });
+    res.json(emergencies);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+      }
+  }
 // export modules
 module.exports = {
   createEmergency,
@@ -258,5 +272,6 @@ module.exports = {
   acceptEmergency,
   getServiceProvidersByServiceType,
   getServiceProvidersByLocation,
-  getNearbyEmergencies
+  getNearbyEmergencies,
+  getAllUserEmergencies,
 };
