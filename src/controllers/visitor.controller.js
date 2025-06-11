@@ -1,5 +1,5 @@
-const Visitor = require('../models/Visitor');
-const Log = require('../models/Log');
+const Visitor = require('../models/visitor.model');
+const Log = require('../models/logs.model');
 
 // Register a new visitor
 exports.registerVisitor = async (req, res) => {
@@ -19,13 +19,14 @@ exports.registerVisitor = async (req, res) => {
     });
 
     await visitor.save();
+    console.log('Visitor registered:', visitor);
 
     // Log the action
     const log = new Log({
       visitor: visitor._id,
       action: 'check-in',
       details: req.body,
-      performedBy: req.user.id
+      performedBy: '6849486ae373cf5d76ee736f'
     });
     await log.save();
 

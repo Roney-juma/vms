@@ -2,7 +2,7 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io"); 
 const router = require("./routes/index");
-const logger = require('./middlewheres/logger');
+const logger = require('./middleware/logger');
 const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*" }));
-app.use("/api", router);
+app.use("/api/v1", router);
  
 app.get("/v1", (req, res) => {
   res.send("Road Rescue");

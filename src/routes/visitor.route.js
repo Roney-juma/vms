@@ -8,6 +8,6 @@ router.get('/', visitorController.getAllVisitors);
 router.get('/current', visitorController.getCurrentVisitors);
 router.get('/:id', visitorController.getVisitor);
 router.put('/:id', visitorController.updateVisitor);
-router.put('/:id/checkout', protect, visitorController.checkOutVisitor);
+router.put('/:id/checkout', visitorController.checkOutVisitor);
 
 module.exports = router;

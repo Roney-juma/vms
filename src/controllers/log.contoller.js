@@ -1,4 +1,4 @@
-const Log = require('../models/Log');
+const Log = require('../models/logs.model');
 
 // Get all logs
 exports.getAllLogs = async (req, res) => {
