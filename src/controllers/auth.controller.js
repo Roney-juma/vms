@@ -1,5 +1,4 @@
 const authService = require("../service/auth.service");
-const userService = require("../service/users.service");
 const tokenService = require("../service/token.service");
 
 
