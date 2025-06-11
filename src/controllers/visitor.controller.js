@@ -70,7 +70,7 @@ exports.checkOutVisitor = async (req, res) => {
       visitor: visitor._id,
       action: 'check-out',
       details: { checkOutTime: visitor.checkOut },
-      performedBy: req.user.id
+      performedBy: '6849486ae373cf5d76ee736f'
     });
     await log.save();
 
@@ -179,3 +179,30 @@ exports.updateVisitor = async (req, res) => {
     });
   }
 };
+
+// Check existing visitor by phone number
+exports.checkExistingVisitor = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    
+    const visitor = await Visitor.find
+      ({ phone })
+      .populate('host')
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: 'No visitor found with this phone number'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      data: visitor
+    });
+  }
+  catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
