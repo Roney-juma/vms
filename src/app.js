@@ -17,7 +17,7 @@ app.use(cors({ origin: "*" }));
 app.use("/api/v1", router);
  
 app.get("/v1", (req, res) => {
-  res.send("Road Rescue");
+  res.send("Welcome to the VMS API");
 });
 
 // Create an HTTP server with the Express app
@@ -27,7 +27,7 @@ const io = socketIo(server, {
   cors: {
     // Allow requests from any origin
     
-    origin: ["*","https://admin.aveafricasolutions.com/"],
+    origin: ["*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }
